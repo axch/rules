@@ -165,9 +165,8 @@
        `(and ,@(iota len))
        ((rule-simplifier (list (commutativity 'and))) items)))))
 
-
  (define-test (simplifying-large-ands)
-   (let* ((len 8)
+   (let* ((len 10) ; TODO quadratic
 	  (items `(and ,@(iota len) ,@(make-list 10 'foo))))
      (check
       (equal?
