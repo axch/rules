@@ -144,4 +144,34 @@
       ((rule-simplifier (list or-idempotent))
        items))))
 
+ (define-test (commutativity-check-test)
+   (let* ((len 10) ; TODO quadratic
+	  (items `(and ,@(iota len))))
+     (check (not ((commutativity 'and) items)))))
+
+ (define-test (commutativity-rule-test)
+   (let* ((len 10) ; N log N
+	  (items `(and ,@(reverse (iota len)))))
+     (check
+      (equal?
+       `(and ,@(iota len))
+       ((commutativity 'and) items)))))
+
+ (define-test (commutativity-test)
+   (let* ((len 15) ; quadratic!?
+	  (items `(and ,@(reverse (iota len)))))
+     (check
+      (equal?
+       `(and ,@(iota len))
+       ((rule-simplifier (list (commutativity 'and))) items)))))
+
+
+ (define-test (simplifying-large-ands)
+   (let* ((len 8)
+	  (items `(and ,@(iota len) ,@(make-list 10 'foo))))
+     (check
+      (equal?
+       `(and ,@(iota len) foo)
+       (simplify-ands items)))))
+
 )
