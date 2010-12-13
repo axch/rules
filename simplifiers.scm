@@ -22,10 +22,17 @@
 
 (define (associativity operator)
   (rule `(,operator (?? a) (,operator (?? b)) (?? c))
-	`(,operator ,@a ,@b ,@c)))
+	#; `(,operator ,@a ,@b ,@c) ; Too slow to do them one at a time
+	(append-map (lambda (item)
+		      (if (and (pair? item)
+			       (eq? operator (car item)))
+			  (cdr item)
+			  (list item)))
+		    `(,operator ,@a ,@b ,@c))))
 
 (define (commutativity operator)
   (rule `(,operator (?? a) (? y) (? x) (?? b))
+	#; `(,operator ,@a ,x ,y ,@b) ; One at a time is bubble sort
 	(and (expr<? x y)
 	     `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?)))))
 

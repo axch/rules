@@ -104,11 +104,21 @@
       ((rule-simplifier (list find-consecutive-dups))
        items))))
 
+ (define-test (associativity-test)
+   (define plus-assoc (associativity '+))
+   (let* ((sublist '(1 2 3))
+	  (len 10) ; linear (I think)
+	  (items (cons '+ (make-list len (cons '+ sublist)))))
+     (check (equal?
+	     (cons '+ (apply append (make-list len sublist)))
+	     ((rule-simplifier (list plus-assoc))
+	      items)))))
+
  (define-test (removing-duplicates)
    (define find-consecutive-dups
      (rule '((?? stuff1) (? x) (? x) (?? stuff2))
 	   `(,@stuff1 ,x ,@stuff2)))
-   (let ((items (make-list 10 'foo))) ; TODO quadratic + gc pressure
+   (let ((items (make-list 10 'foo))) ; quadratic + gc pressure
      (assert-equal
       '(foo)
       ((rule-simplifier (list find-consecutive-dups))
@@ -118,10 +128,11 @@
    (define find-consecutive-dups
      (rule '((?? stuff1) (? x) (? x) (?? stuff2))
 	   `(,@stuff1 ,x ,@stuff2)))
-   (let* ((len 10) ; TODO quadratic + gc pressure
+   (let* ((len 10) ; quadratic + gc pressure
 	  (items (append (iota len) (make-list len 'foo))))
      (assert-equal
       (append (iota len) '(foo))
       ((rule-simplifier (list find-consecutive-dups))
        items))))
+
 )
