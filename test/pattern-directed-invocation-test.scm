@@ -36,6 +36,33 @@
 	   y)))
 
     (apply frob '(a b b b b b b c))
-    (produces '(b b)))))
+    (produces '(b b))))
 
+ (define-test (factorial-1)
+   (interaction
+    (define factorial (make-pattern-operator))
 
+    (attach-rule! factorial (rule '(0) 1))
+
+    (attach-rule! factorial
+		  (rule `((? n ,positive?))
+			(* n (factorial (- n 1)))))
+
+    (factorial 10)
+    (produces 3628800)))
+ 
+ (define-test (factorial-2)
+   (interaction
+    (define factorial (make-pattern-operator))
+
+    (attach-rule! factorial
+		  (make-rule '((? n))
+			     (lambda (n) (* n (factorial (- n 1))))))
+
+    (attach-rule! factorial
+		  (make-rule '(0) (lambda () 1)))
+
+    (factorial 10)
+    (produces 3628800)))
+
+)
