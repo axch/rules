@@ -1,5 +1,12 @@
 (declare (usual-integrations))
 
+;;; RULE-SIMPLIFIER makes term-rewriting systems from collections of
+;;; rules.  Given a collection of rules, the term-rewriting system
+;;; will apply them repeatedly to all possible subexpressions of the
+;;; given expression, and then to the expression itself, until no
+;;; further rules match.  Of course, the rules in question must be
+;;; arranged so as to ensure that this process terminates.
+
 (define (rule-simplifier the-rules)
   (define (simplify-expression expression)
     (let ((subexpressions-simplified
