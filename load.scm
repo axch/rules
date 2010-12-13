@@ -18,4 +18,5 @@
 (define (rule-memoize f) f)
 
 (load-relative "pattern-directed-invocation")
+(load-relative "simplification")
 (load-relative "simplifiers")

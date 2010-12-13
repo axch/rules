@@ -9,10 +9,11 @@
 	      (set! succeed (lambda (value fail) value)))
 	  (if (default-object? fail)
 	      (set! fail (lambda () #f)))
-	  (pattern-combinator data
-	   (lambda (dict fail)
-	     (handler dict succeed fail))
-	   fail)))))
+	  (interpret-success
+	   (pattern-combinator data
+	    (lambda (dict fail)
+	      (handler dict succeed fail))
+	    fail))))))
 
 (define (make-pattern-operator #!optional rules)
   (define (operator self . arguments)
@@ -25,27 +26,6 @@
 (define (attach-rule! operator rule)
   (set-entity-extra! operator
    (cons rule (entity-extra operator))))
-
-(define (rule-simplifier the-rules)
-  (define (simplify-expression expression)
-    (let ((subexpressions-simplified
-	   (if (list? expression)
-	       (map simplify-expression expression)
-	       expression)))
-      (try-rules subexpressions-simplified the-rules
-       (lambda (result fail)
-	 (simplify-expression result))
-       (lambda ()
-	 subexpressions-simplified))))
-  (rule-memoize simplify-expression))
-
-(define (try-rules data rules succeed fail)
-  (let per-rule ((rules rules))
-    (if (null? rules)
-	(fail)
-	((car rules) data succeed
-	 (lambda ()
-	   (per-rule (cdr rules)))))))
 
 ;;; The user-handler is expected to be a procedure that binds the
 ;;; variables that appear in the match and uses them somehow.  This
@@ -64,9 +44,21 @@
 		     name dict))))
        (let* ((argument-list (map matched-value handler-argl))
 	      (user-answer (apply user-handler argument-list)))
-	 (if user-answer
-	     (succeed user-answer fail)
-	     (fail)))))))
+	 (cond ((success? user-answer)
+		(succeed (success-value user-answer) fail))
+	       (user-answer
+		(succeed user-answer fail))
+	       (else (fail))))))))
+
+(define-structure success
+  value)
+
+(define succeed make-success)
+
+(define (interpret-success thing)
+  (if (success? thing)
+      (success-value thing)
+      thing))
 
 (define (user-handler? thing)
   (not (system-handler? thing)))

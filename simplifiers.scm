@@ -1,116 +1,308 @@
-;;;; File:  rules.scm -- Some sample algebraic simplification rules
+;;;; Functions for generating common rule types
 
-(define algebra-1
-  (rule-simplifier
-   (list
-    ;; Associative law of addition
-    (rule '(+ (? a) (+ (? b) (? c)))
-	  `(+ (+ ,a ,b) ,c))
+(declare (usual-integrations))
 
-    ;; Commutative law of multiplication
-    (rule '(* (? b) (? a))
-	  (and (expr<? a b)
-	       `(* ,a ,b)))
+;;; Note the use of unquote in the matcher expressions.
 
-    ;; Distributive law of multiplication over addition
-    (rule '(* (? a) (+ (? b) (? c)))
-	  `(+ (* ,a ,b) (* ,a ,c))) )))
+(define (nullary-replacement operator value)
+  (rule `(,operator)
+	(succeed value)))
 
-(define (list<? x y)
-  (let ((nx (length x)) (ny (length y)))
-    (cond ((< nx ny) #t)
-	  ((> nx ny) #f)
-	  (else
-	   (let lp ((x x) (y y))
-	     (cond ((null? x) #f)	; same
-		   ((expr<? (car x) (car y)) #t)
-		   ((expr<? (car y) (car x)) #f)
-		   (else (lp (cdr x) (cdr y)))))))))
+(define (unary-elimination operator)
+  (rule `(,operator (? a))
+	(succeed a)))
 
-(define expr<?
-  (make-entity
-   (lambda (self x y)
-     (let per-type ((types (entity-extra self)))
-       (if (null? types)
-	   (error "Unknown expression type -- expr<?" x y)
-	   (let ((predicate? (caar types))
-		 (comparator (cdar types)))
-	     (cond ((predicate? x)
-		    (if (predicate? y)
-			(comparator x y)
-			#t))
-		   ((predicate? y) #f)
-		   (else (per-type (cdr types))))))))
-   `((,null?   . ,(lambda (x y) #f))
-     (,number? . ,<)
-     (,symbol? . ,symbol<?)
-     (,list?   . ,list<?))))
-#|
- (algebra-1 '(* (+ y (+ z w)) x))
- ;Value: (+ (+ (* x y) (* x z)) (* w x))
-|#
-
-(define algebra-2
+(define (constant-elimination operator constant)
+  (rule `(,operator ,constant (?? x))
+	`(,operator ,@x)))
+
+(define (constant-promotion operator constant)
+  (rule `(,operator ,constant (?? x))
+	(succeed constant)))
+
+(define (associativity operator)
+  (rule `(,operator (?? a) (,operator (?? b)) (?? c))
+	`(,operator ,@a ,@b ,@c)))
+
+(define (commutativity operator)
+  (rule `(,operator (?? a) (? y) (? x) (?? b))
+	(and (expr<? x y)
+	     `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?)))))
+
+;;;; Some algebraic simplification rules
+
+
+(define simplify-sums
   (rule-simplifier
    (list
 
-    ;; Sums
-
-    (rule `(+ (? a)) a)
-
-    (rule `(+ (?? a) (+ (?? b)))
-	  `(+ ,@a ,@b))
-
-    (rule `(+ (+ (?? a)) (?? b))
-	  `(+ ,@a ,@b))
-
-    (rule `(+ (?? a) (? y) (? x) (?? b))
-	  (and (expr<? x y)
-	       `(+ ,@a ,x ,y ,@b)))
-    
-
-    ;; Products
-
-    (rule `(* (? a)) a)
-
-    (rule `(* (?? a) (* (?? b)))
-	  `(* ,@a ,@b))
-
-    (rule `(* (* (?? a)) (?? b))
-	  `(* ,@a ,@b))
-
-    (rule `(* (?? a) (? y) (? x) (?? b))
-	  (and (expr<? x y)
-	       `(* ,@a ,x ,y ,@b)))
-
-
-    ;; Distributive law
-
-    (rule `(* (? a) (+ (?? b)))
-	  `(+ ,@(map (lambda (x) `(* ,a ,x)) b)))
-
-
-    ;; Numerical simplifications below
-
-    (rule `(+ 0 (?? x)) `(+ ,@x))
-
+    (nullary-replacement '+ 0)
+    (unary-elimination '+)
+    (constant-elimination '+ 0)
     (rule `(+ (? x ,number?) (? y ,number?) (?? z))
 	  `(+ ,(+ x y) ,@z))
-
-
-    (rule `(* 0 (?? x)) 0)
-     
-    (rule `(* 1 (?? x)) `(* ,@x))
-
-    (rule `(* (? x ,number?) (? y ,number?) (?? z))
-	  `(* ,(* x y) ,@z))
+    (associativity '+)
+    (commutativity '+)
 
     )))
 
-#|
- (algebra-2 '(* (+ y (+ z w)) x))
- ;Value: (+ (* w x) (* x y) (* x z))
+(define simplify-products
+  (rule-simplifier
+   (list
 
- (algebra-2 '(+ (* 3 (+ x 1)) -3))
- ;Value: (* 3 x)
-|#
+    (nullary-replacement '* 1)
+    (unary-elimination '*)
+    (constant-elimination '* 1)
+    (constant-promotion '* 0)
+    (rule `(* (? x ,number?) (? y ,number?) (?? z))
+	  `(* ,(* x y) ,@z))
+    (associativity '*)
+    (commutativity '*) ;; TODO be able to turn this off?
+
+    )))
+
+(define distributive-law
+  (rule `(* (?? a) (+ (?? b)) (?? c))
+	`(+ ,@(map (lambda (x)
+		     (simplify-products
+		      `(* ,@a ,x ,@c)))
+		   b))))
+
+(define simplify-algebra
+  (iterate-until-stable
+   (compose (rule-simplifier (list distributive-law))
+	    simplify-sums
+	    simplify-products)))
+
+(define simplify-quotient
+  (rule-simplifier
+   (list
+
+    (rule `(/ (? n) 1) n)
+    (rule `(/ 0 (? d)) 0)
+
+    (rule `(/ 1 (/ (? n) (? d)))
+	  `(/ ,d ,n))
+
+    (rule `(/ (? n) (? d))
+	  (let ((g (g:gcd n d)))
+	    (and (not (= g 1))
+		 (let ((nn (g:divide n g))
+		       (dd (g:divide d g)))
+		   (simplify-quotient
+		    `(/ ,nn ,dd))))))
+
+    )))
+
+;;; For now:
+
+(define (g:gcd x y) 1)
+
+(define (g:divide x y)
+  (error "Unimplemented divide" x y))
+
+(define ->quotient-of-sums
+  (rule-simplifier
+   (list
+
+    ;; Same denominator
+    (rule `(+ (?? a1) (/ (? n1) (? d)) (?? a2) (/ (? n2) (? d)) (?? a3))
+	  (simplify-sums
+	   `(+ ,(simplify-quotient
+		 `(/ ,(simplify-sums `(+ ,n1 ,n2)) ,d))
+	       ,@a1 ,@a2 ,@a3)))
+
+    ;; General Case
+    (rule `(+ (?? a1) (/ (? n1) (? d1)) (?? a2) (/ (? n2) (? d2)) (?? a3))
+	  (simplify-sums
+	   `(+ ,(simplify-quotient
+		 `(/ ,(simplify-sums
+		       `(+ ,(simplify-products `(* ,n1 ,d2))
+			   ,(simplify-products `(* ,n2 ,d1))))
+		     ,(simplify-products `(* ,d1 ,d2))))
+	       ,@a1 ,@a2 ,@a3)))
+
+    ;; Other terms
+    (rule `(+ (?? a1) (/ (? n) (? d)) (?? a2))
+	  (simplify-quotient
+	   `(/ ,(simplify-sums
+		 `(+ ,n
+		     ,(simplify-products
+		       (* ,d ,(simplify-sums `(+ ,@a1 ,@a2))))))
+	       ,d)))
+
+    )))
+
+(define quotient-of-sums->sum-of-quotients
+  (rule-simplifier
+   (list
+
+    (rule `(/ (+ (?? as)) (? d))
+	  `(+ ,@(map (lambda (n)
+		       (simplify-quotient
+			`(/ ,n ,d)))
+		     as)))
+
+    )))
+
+(define simplify-expt
+  (rule-simplifier
+   (list
+
+    (rule `(expt (? a ,number?) (? b ,number?))
+	  (s:expt a b))
+
+    (rule `(expt (? b) 1) b)
+    (rule `(expt (? b) -1) `(/ 1 b))	; Do we want this?
+    (rule `(expt 0 (? e)) 0)		; Needs to be positive
+    (rule `(expt 1 (? e)) 1)
+
+    )))
+
+(define remove-minus
+  (rule-simplifier
+   (list
+    (rule `(- (? x) (? y) (?? z))
+	  `(+ ,x (* -1 (+ ,y ,@z))))
+    (rule `(- (? x)) `(* -1 ,x))
+    )))
+
+(define expand-expt
+  (rule-simplifier
+   (list
+
+    (rule `(expt (? x) (? n (conjoin exact-integer? positive?)))
+	  `(* ,@(make-list n x)))
+
+    (rule `(expt (? x) (? n (conjoin exact-integer? negative?)))
+	  `(/ 1 (* ,@(make-list n x))))
+
+    )))
+
+(define contract-expt
+  (rule-simplifier
+   (list
+
+    (rule `(* (?? f1) (? x) (? x) (?? f2))
+	  `(* ,@f1 (expt x 2) ,@f2))
+    
+    (rule `(expt (expt (? x) (? n)) (? m))
+	  `(expt x (* ,n ,m)))
+
+    (rule `(* (?? f1) (? x) (expt (? x) (? n)) (?? f2))
+	  `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
+    
+    (rule `(* (?? f1) (expt (? x) (? n)) (? x) (?? f2))
+	  `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
+
+    (rule `(* (?? f1) (expt (? x) (? n)) (expt (? x) (? m)) (?? f2))
+	  `(* ,@f1 (expt x (+ ,n ,m)) ,@f2))
+
+    )))
+
+;;;; Logical simplification
+
+
+(define simplify-negations
+  (rule-simplifier
+   (list
+
+    (rule `(not (not (? x))) (succeed x))
+    (rule `(not #t) (succeed #f))
+    (rule `(not #f) (succeed #t))
+    
+    (rule `(not (or (?? terms)))
+	  `(and ,@(map (lambda (term)
+			 `(not ,term))
+		       terms)))
+
+    (rule `(not (and (?? terms)))
+	  `(or ,@(map (lambda (term)
+			`(not ,term))
+		      terms)))
+
+    )))
+
+(define simplify-ors
+  (rule-simplifier
+   (list
+
+    (nullary-replacement 'or #f)
+    (unary-elimination 'or)
+    (constant-elimination 'or #f)
+    (constant-promotion 'or #t)
+    (associativity 'or)
+    (commutativity 'or)
+
+    (rule `(or (?? a) (? x) (? x) (?? b))
+	  `(or ,@a ,x ,@b))
+
+    (rule `(or (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+	  (succeed #t))
+
+    (rule `(or (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
+	  (succeed #t))
+
+    )))
+
+(define simplify-ands
+  (rule-simplifier
+   (list
+
+    (nullary-replacement 'and #t)
+    (unary-elimination 'and)
+    (constant-elimination 'and #t)
+    (constant-promotion 'and #f)
+    (associativity 'and)
+    (commutativity 'and)
+
+    (rule `(and (?? a) (? x) (? x) (?? b))
+	  `(and ,@a ,x ,@b))
+
+    (rule `(and (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+	  (succeed #f))
+
+    (rule `(and (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
+	  (succeed #f))
+
+    )))
+
+(define push-or-through-and
+  (rule `(or (?? or-terms-1) (and (?? and-terms)) (?? or-terms-2))
+	`(and ,@(map (lambda (and-term)
+		       `(or ,@or-terms-1 ,and-term ,@or-terms-2))
+		     and-terms))))
+
+;;; TODO Implement subsumption, and then implement resolution propertly.
+
+;;; These resolution rules are wrong, because they do not deduce all
+;;; consequences, and they remove the resolvees prematurely.
+;; (define resolution-1
+;;   (rule `(and (?? and-terms-1) (or (?? or-1-terms-1) (? a) (?? or-1-terms-2))
+;; 	     (?? and-terms-2) (or (?? or-2-terms-1) (not (? a)) (?? or-2-terms-2))
+;; 	     (?? and-terms-3))
+;; 	`(and ,@and-terms-1 (or ,@or-1-terms-1 ,@or-1-terms-2 ,@or-2-terms-1 ,@or-2-terms-2)
+;; 	      ,@and-terms-2 ,@and-terms-3)))
+
+;; (define resolution-2
+;;   (rule `(and (?? and-terms-1) (or (?? or-1-terms-1) (not (? a)) (?? or-1-terms-2))
+;; 	     (?? and-terms-2) (or (?? or-2-terms-1) (? a) (?? or-2-terms-2))
+;; 	     (?? and-terms-3))
+;; 	`(and ,@and-terms-1 (or ,@or-1-terms-1 ,@or-1-terms-2 ,@or-2-terms-1 ,@or-2-terms-2)
+;; 	      ,@and-terms-2 ,@and-terms-3)))
+
+(define ->conjunctive-normal-form
+  (compose
+   (iterate-until-stable
+    (compose (rule-simplifier (list push-or-through-and))
+	     simplify-ands
+	     simplify-ors))
+   simplify-negations))
+
+;; (define do-resolution
+;;   (iterate-until-stable
+;;    (compose
+;;     (rule-simplifier (list resolution-1 resolution-2))
+;;     ->conjunctive-normal-form)))
+
+(define simplify-logic ->conjunctive-normal-form)

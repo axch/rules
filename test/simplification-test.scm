@@ -2,18 +2,18 @@
  simplification
 
  (define-each-check
-
-   (equal?
-    '(+ (+ (* x y) (* x z)) (* w x))
-    (algebra-1 '(* (+ y (+ z w)) x)))
-
    (equal?
     '(+ (* w x) (* x y) (* x z))
-    (algebra-2 '(* (+ y (+ z w)) x)))
+    (simplify-algebra '(* (+ y (+ z w)) x)))
 
    (equal?
     '(* 3 x)
-    (algebra-2 '(+ (* 3 (+ x 1)) -3))))
+    (simplify-algebra '(+ (* 3 (+ x 1)) -3)))
+
+   (equal? 0 (simplify-algebra '(+)))
+   (equal? #t (simplify-logic '(and)))
+   (equal? #f (simplify-logic '(or)))
+   )
 
  (define associate-addition
    (rule '(+ (? a) (+ (? b) (? c)))
