@@ -3,10 +3,11 @@
 ;;; RULE-SIMPLIFIER makes term-rewriting systems from collections of
 ;;; rules.  Given a collection of rules, the term-rewriting system
 ;;; will apply them repeatedly to all possible subexpressions of the
-;;; given expression, and then to the expression itself, until no
-;;; further rules match.  Of course, the rules in question should be
-;;; arranged so as to ensure that this process terminates in a
-;;; reasonable amount of time.
+;;; given expression, and to the expression itself, replacing any
+;;; successful match with the output of that rule, until no further
+;;; rules match.  Of course, the rules in question should be arranged
+;;; so as to ensure that this process terminates in a reasonable
+;;; amount of time.
 
 (define (rule-simplifier the-rules)
   (let ((unique-object (list)))
