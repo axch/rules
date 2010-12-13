@@ -8,4 +8,4 @@
 (define (rule-memoize f) f)
 
 (load "pattern-directed-invocation")
-(load "rules")
+(load "simplifiers")
