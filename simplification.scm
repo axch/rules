@@ -14,14 +14,6 @@
        subexpressions-simplified)))
   (rule-memoize simplify-expression))
 
-(define (try-rules data rules succeed fail)
-  (let per-rule ((rules rules))
-    (if (null? rules)
-	(fail)
-	((car rules) data succeed
-	 (lambda ()
-	   (per-rule (cdr rules)))))))
-
 (define (list<? x y)
   (let ((nx (length x)) (ny (length y)))
     (cond ((< nx ny) #t)
