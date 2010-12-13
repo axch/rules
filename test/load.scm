@@ -8,6 +8,25 @@
 (define (load-relative filename)
   (self-relatively (lambda () (load filename))))
 
+(define (first-dictionary matcher)
+  (lambda (datum)
+    (matcher datum '() (lambda (dict) dict))))
+
+(define (all-dictionaries matcher)
+  (lambda (datum)
+    (let ((results '()))
+      (matcher
+       datum
+       '()
+       (lambda (dict)
+	 (set! results (cons dict results))
+	 #f))
+      (reverse results))))
+
+(define (assert-same-dictionary-lists expected got)
+  (assert-equal (length expected) (length got))
+  (assert-true (every dict:equal? expected got)))
+
 (load-relative "../../testing/load")
 (load-relative "matcher-test")
 (load-relative "pattern-directed-invocation-test")
