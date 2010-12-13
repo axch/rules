@@ -113,9 +113,8 @@
 					 (make-segment data tail)
 					 dictionary)
 			      tail)
-		     (if (null? tail)
-			 #f
-			 (lp (cdr tail)))))))))
+		     (and (pair? tail)
+			  (lp (cdr tail)))))))))
   (segment-matcher! segment-match)
   segment-match)
 
