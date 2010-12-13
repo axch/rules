@@ -165,9 +165,13 @@
        `(and ,@(iota len))
        ((rule-simplifier (list (commutativity 'and))) items)))))
 
- (define-test (simplifying-large-ands)
+ (define-test (simplifying-sums)
+   (let ((len 10)) ; linear
+     (check (equal? len (simplify-sums `(+ ,@(make-list len 1)))))))
+
+ (define-test (simplifying-ands)
    (let* ((len 10) ; TODO quadratic
-	  (items `(and ,@(iota len) ,@(make-list 10 'foo))))
+	  (items `(and ,@(iota len) ,@(make-list len 'foo))))
      (check
       (equal?
        `(and ,@(iota len) foo)
