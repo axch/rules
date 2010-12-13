@@ -130,7 +130,9 @@
 	    (lp (cdr data) (cdr matchers) new-dictionary))))
       (define (try-segment submatcher)
 	(submatcher data dictionary
-          (lambda (new-dictionary remaining-data)
+          (lambda (new-dictionary #!optional remaining-data)
+	    (if (default-object? remaining-data)
+		(set! remaining-data '()))
 	    (lp remaining-data (cdr matchers) new-dictionary))))
       (cond ((pair? matchers)
 	     (if (segment-matcher? (car matchers))
@@ -145,7 +147,8 @@
 ;;; Sticky notes
 
 (define (segment-matcher! thing)
-  (eq-put! thing 'segment-matcher #t))
+  (eq-put! thing 'segment-matcher #t)
+  thing)
 (define (segment-matcher? thing)
   (eq-get thing 'segment-matcher))
 
@@ -181,10 +184,17 @@
   (lambda (pattern) (match:segment (match:variable-name pattern)))
   match:segment?)
 
-(defhandler match:->combinators
-  (lambda (pattern)
-    (apply match:list (map match:->combinators pattern)))
-  match:list?)
+(define (list-pattern->combinators pattern)
+  (define (last-list-submatcher subpattern)
+    (if (match:segment? subpattern)
+	(segment-matcher! (match:element (match:variable-name subpattern) '()))
+	(match:->combinators subpattern)))
+  (if (null? pattern)
+      (match:eqv '())
+      (apply match:list (append (map match:->combinators (except-last-pair pattern))
+				(list (last-list-submatcher (car (last-pair pattern))))))))
+
+(defhandler match:->combinators list-pattern->combinators match:list?)
 
 (define (matcher pattern)
   (let ((match-combinator (match:->combinators pattern)))
