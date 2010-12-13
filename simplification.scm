@@ -9,18 +9,30 @@
 ;;; reasonable amount of time.
 
 (define (rule-simplifier the-rules)
-  (define (simplify-expression expression)
-    (let ((subexpressions-simplified
-	   (if (list? expression)
-	       (map simplify-expression expression)
-	       expression)))
-      ((iterate-until-stable
-	(lambda (subexpressions-simplified)
-	  (try-rules subexpressions-simplified the-rules
-		     (lambda (result fail) (succeed result))
-		     (lambda () subexpressions-simplified))))
-       subexpressions-simplified)))
-  (rule-memoize simplify-expression))
+  (let ((unique-object (list)))
+    (define (make-unfakeable-box thing)
+      (cons unique-object thing))
+    (define (unfakeable-box? thing)
+      (and (pair? thing)
+	   (eq? (car thing) unique-object)))
+    (define unfakeable-contents cdr)
+    (define (compute-simplify-expression expression)
+      (let ((subexpressions-simplified
+	     (if (list? expression)
+		 (map simplify-expression expression)
+		 expression)))
+	(let ((answer (try-rules
+		       subexpressions-simplified the-rules
+		       (lambda (result fail) (make-unfakeable-box result))
+		       (lambda () #f))))
+	  (cond ((unfakeable-box? answer)
+		 (simplify-expression (unfakeable-contents answer)))
+		((not answer)
+		 subexpressions-simplified)
+		(else
+		 (simplify-expression answer))))))
+    (define simplify-expression (rule-memoize compute-simplify-expression))
+    simplify-expression))
 
 (define (list<? x y)
   (let ((nx (length x)) (ny (length y)))
