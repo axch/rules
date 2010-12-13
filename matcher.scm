@@ -171,7 +171,7 @@
 	   (not (memq (car pattern) '(? ??))))))
 
 (define match:->combinators
-  (make-generic-operator 1 match:eqv))
+  (make-generic-operator 1 'match:->combinators match:eqv))
 
 (defhandler match:->combinators
   (lambda (pattern)

@@ -13,7 +13,7 @@
 ;;; argument is rejected.  Here backtracking is implemented by success
 ;;; and failure continuation procedures.
 
-(define (make-generic-operator arity default-operation)
+(define (make-generic-operator arity name default-operation)
   (let ((record (make-operator-record arity)))
 
     (define (operator . arguments)
