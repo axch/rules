@@ -254,9 +254,7 @@
     (constant-promotion 'or #t)
     (associativity 'or)
     (commutativity 'or)
-
-    (rule `(or (?? a) (? x) (? x) (?? b))
-	  `(or ,@a ,x ,@b))
+    (idempotence 'or)
 
     (rule `(or (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
 	  (succeed #t))
@@ -276,9 +274,7 @@
     (constant-promotion 'and #f)
     (associativity 'and)
     (commutativity 'and)
-
-    (rule `(and (?? a) (? x) (? x) (?? b))
-	  `(and ,@a ,x ,@b))
+    (idempotence 'and)
 
     (rule `(and (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
 	  (succeed #f))
