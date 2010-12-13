@@ -98,7 +98,7 @@
    (define find-consecutive-dups
      (rule '((?? stuff1) (? x) (? x) (?? stuff2))
 	   `(,@stuff1 ,x ,@stuff2)))
-   (let ((items (iota 10))) ; TODO quadratic
+   (let ((items (iota 10))) ; linear
      (assert-equal
       items
       ((rule-simplifier (list find-consecutive-dups))
@@ -108,7 +108,7 @@
    (define find-consecutive-dups
      (rule '((?? stuff1) (? x) (? x) (?? stuff2))
 	   `(,@stuff1 ,x ,@stuff2)))
-   (let ((items (make-list 10 'foo))) ; TODO cubic + gc pressure
+   (let ((items (make-list 10 'foo))) ; TODO quadratic + gc pressure
      (assert-equal
       '(foo)
       ((rule-simplifier (list find-consecutive-dups))
@@ -118,7 +118,7 @@
    (define find-consecutive-dups
      (rule '((?? stuff1) (? x) (? x) (?? stuff2))
 	   `(,@stuff1 ,x ,@stuff2)))
-   (let* ((len 10) ; TODO cubic + gc pressure
+   (let* ((len 10) ; TODO quadratic + gc pressure
 	  (items (append (iota len) (make-list len 'foo))))
      (assert-equal
       (append (iota len) '(foo))

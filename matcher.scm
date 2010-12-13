@@ -47,7 +47,40 @@
   (assq variable dictionary))
 
 (define (dict:value vcell)
-  (cadr vcell))
+  (interpret-segment (cadr vcell)))
+
+(define-structure (segment (constructor make-segment (head tail)))
+  head
+  tail
+  (body-cache #f))
+
+(define (segment-body segment)
+  (define (compute-segment-body)
+    (if (null? tail)
+	(segment-head segment)
+	(let loop ((head (segment-head segment))
+		   (tail (segment-tail segment)))
+	  (cond ((eq? head tail)
+		 '())
+		((null? head)
+		 (error "Tail pointer did not point into head's list" segment))
+		(else
+		 (cons (car head) (loop (cdr head) tail)))))))
+  (if (segment-body-cache segment)
+      (segment-body-cache segment)
+      (let ((answer (compute-segment-body)))
+	(set-segment-body-cache! segment answer)
+	answer)))
+
+(define (interpret-segment thing)
+  (if (segment? thing)
+      (segment-body thing)
+      thing))
+
+(define (interpret-segments-in-dictionary dict)
+  (map (lambda (entry)
+	 (list (car entry) (interpret-segment (cadr entry))))
+       dict))
 
 ;;; TODO match:segment need not search under two circumstances.  One
 ;;; is encoded here: if the variable's value is already known, no
@@ -67,24 +100,22 @@
 	 (let ((vcell (dict:lookup variable dictionary)))
 	   (if vcell
 	       (let lp ((data data)
-			(pattern (dict:value vcell))
-			(n 0))
+			(pattern (dict:value vcell)))
 		 (cond ((pair? pattern)
 			(if (and (pair? data)
 				 (equal? (car data) (car pattern)))
-			    (lp (cdr data) (cdr pattern) (+ n 1))
+			    (lp (cdr data) (cdr pattern))
 			    #f))
 		       ((not (null? pattern)) #f)
-		       (else (succeed dictionary n))))
-	       (let ((n (length data)))
-		 (let lp ((i 0))
-		   (if (<= i n)
-		       (or (succeed (dict:bind variable
-					       (list-head data i)
-					       dictionary)
-				    i)
-			   (lp (+ i 1)))
-		       #f)))))))
+		       (else (succeed dictionary data))))
+	       (let lp ((tail data))
+		 (or (succeed (dict:bind variable
+					 (make-segment data tail)
+					 dictionary)
+			      tail)
+		     (if (null? tail)
+			 #f
+			 (lp (cdr tail)))))))))
   (segment-matcher! segment-match)
   segment-match)
 
@@ -99,10 +130,8 @@
 	    (lp (cdr data) (cdr matchers) new-dictionary))))
       (define (try-segment submatcher)
 	(submatcher data dictionary
-          (lambda (new-dictionary n)
-	    (if (> n (length data))
-		(error "Matcher ate too much." n))
-	    (lp (list-tail data n) (cdr matchers) new-dictionary))))
+          (lambda (new-dictionary remaining-data)
+	    (lp remaining-data (cdr matchers) new-dictionary))))
       (cond ((pair? matchers)
 	     (if (segment-matcher? (car matchers))
 		 (try-segment (car matchers))

@@ -10,7 +10,9 @@
 
 (define (first-dictionary matcher)
   (lambda (datum)
-    (matcher datum '() (lambda (dict) dict))))
+    (matcher datum '() 
+	     (lambda (dict)
+	       (interpret-segments-in-dictionary dict)))))
 
 (define (all-dictionaries matcher)
   (lambda (datum)
@@ -21,7 +23,8 @@
        (lambda (dict)
 	 (set! results (cons dict results))
 	 #f))
-      (reverse results))))
+      (map interpret-segments-in-dictionary
+	   (reverse results)))))
 
 (define (assert-same-dictionary-lists expected got)
   (assert-equal (length expected) (length got))
