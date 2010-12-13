@@ -10,13 +10,14 @@
 (define (load-relative filename)
   (self-relatively (lambda () (load filename))))
 
-(load-relative "utils.scm")
-(load-relative "eq-properties")
-(load-relative "ghelper")
-(load-relative "matcher")
+(load-relative "auto-compilation")
+(load-relative-compiled "utils")
+(load-relative-compiled "eq-properties")
+(load-relative-compiled "ghelper")
+(load-relative-compiled "matcher")
 
 (define (rule-memoize f) f)
 
-(load-relative "pattern-directed-invocation")
-(load-relative "simplification")
-(load-relative "simplifiers")
+(load-relative-compiled "pattern-directed-invocation")
+(load-relative-compiled "simplification")
+(load-relative-compiled "simplifiers")
