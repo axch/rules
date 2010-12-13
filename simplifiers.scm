@@ -36,6 +36,20 @@
 	(and (expr<? x y)
 	     `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?)))))
 
+(define (idempotence operator)
+  (define (remove-consecutive-duplicates lst)
+    (cond ((null? lst)
+	   '())
+	  ((null? (cdr lst))
+	   lst)
+	  ((equal? (car lst) (cadr lst))
+	   (remove-consecutive-duplicates (cdr lst)))
+	  (else
+	   (cons (car lst) (remove-consecutive-duplicates (cdr lst))))))
+  (rule `(,operator (?? a) (? x) (? x) (?? b))
+	#; `(or ,@a ,x ,@b) ; One at a time is too slow
+	`(,operator ,@(remove-consecutive-duplicates `(,@a ,x ,@b)))))
+
 ;;;; Some algebraic simplification rules
 
 

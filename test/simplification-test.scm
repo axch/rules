@@ -122,17 +122,26 @@
      (assert-equal
       '(foo)
       ((rule-simplifier (list find-consecutive-dups))
-       items))))
-
- (define-test (removing-distant-duplicates)
-   (define find-consecutive-dups
-     (rule '((?? stuff1) (? x) (? x) (?? stuff2))
-	   `(,@stuff1 ,x ,@stuff2)))
+       items)))
    (let* ((len 10) ; quadratic + gc pressure
 	  (items (append (iota len) (make-list len 'foo))))
      (assert-equal
       (append (iota len) '(foo))
       ((rule-simplifier (list find-consecutive-dups))
+       items))))
+
+ (define-test (removing-duplicates-the-easy-way)
+   (define or-idempotent (idempotence 'or))
+   (let ((items (cons 'or (make-list 10 'foo)))) ; linear
+     (assert-equal
+      '(or foo)
+      ((rule-simplifier (list or-idempotent))
+       items)))
+   (let* ((len 10) ; linear
+	  (items (cons 'or (append (iota len) (make-list len 'foo)))))
+     (assert-equal
+      (cons 'or (append (iota len) '(foo)))
+      ((rule-simplifier (list or-idempotent))
        items))))
 
 )
