@@ -9,6 +9,7 @@
   (self-relatively (lambda () (load filename))))
 
 (load-relative "../../testing/load")
+(load-relative "matcher-test")
 (load-relative "pattern-directed-invocation-test")
 
 (define (run-tests-and-exit)
