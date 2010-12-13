@@ -1,11 +1,21 @@
 ;;;; File:  load.scm -- Loader for rule system
 
-(load "utils.scm")
-(load "eq-properties")
-(load "ghelper")
-(load "matcher")
+(define (self-relatively thunk)
+  (if (current-eval-unit #f)
+      (with-working-directory-pathname
+       (directory-namestring (current-load-pathname))
+       thunk)
+      (thunk)))
+
+(define (load-relative filename)
+  (self-relatively (lambda () (load filename))))
+
+(load-relative "utils.scm")
+(load-relative "eq-properties")
+(load-relative "ghelper")
+(load-relative "matcher")
 
 (define (rule-memoize f) f)
 
-(load "pattern-directed-invocation")
-(load "simplifiers")
+(load-relative "pattern-directed-invocation")
+(load-relative "simplifiers")
