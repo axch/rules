@@ -212,10 +212,10 @@
   (rule-simplifier
    (list
 
-    (rule `(expt (? x) (? n (conjoin exact-integer? positive?)))
+    (rule `(expt (? x) (? n ,exact-integer? ,positive?))
 	  `(* ,@(make-list n x)))
 
-    (rule `(expt (? x) (? n (conjoin exact-integer? negative?)))
+    (rule `(expt (? x) (? n ,exact-integer? ,negative?))
 	  `(/ 1 (* ,@(make-list n x))))
 
     )))
