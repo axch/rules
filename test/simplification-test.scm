@@ -145,7 +145,7 @@
        items))))
 
  (define-test (commutativity-check-test)
-   (let* ((len 10) ; TODO quadratic
+   (let* ((len 10) ; linear
 	  (items `(and ,@(iota len))))
      (check (not ((commutativity 'and) items)))))
 
@@ -158,7 +158,7 @@
        ((commutativity 'and) items)))))
 
  (define-test (commutativity-test)
-   (let* ((len 15) ; quadratic!?
+   (let* ((len 10) ; linear
 	  (items `(and ,@(reverse (iota len)))))
      (check
       (equal?

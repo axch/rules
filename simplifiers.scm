@@ -30,11 +30,31 @@
 			  (list item)))
 		    `(,operator ,@a ,@b ,@c))))
 
+(define (sorted? lst <)
+  ;; Specifically, I am testing that a stable sort of lst by < will
+  ;; not change anything, that is, that there are no reversals where a
+  ;; later item is < an earlier one.
+  (cond ((not (pair? lst)) #t)
+	((not (pair? (cdr lst))) #t)
+	((< (cadr lst) (car lst)) #f)
+	(else (sorted? (cdr lst) <))))
+
 (define (commutativity operator)
+  ;; Flipping one at a time is bubble sort
+  #;
   (rule `(,operator (?? a) (? y) (? x) (?? b))
-	#; `(,operator ,@a ,x ,y ,@b) ; One at a time is bubble sort
+	`(,operator ,@a ,x ,y ,@b))
+  ;; Finding a pair out of order and sorting is still quadratic,
+  ;; because the matcher matches N times, and each requires
+  ;; constructing the segments so they can be handed to the handler
+  ;; (laziness would help).
+  #;
+  (rule `(,operator (?? a) (? y) (? x) (?? b))
 	(and (expr<? x y)
-	     `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?)))))
+	     `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?))))
+  (rule `(,operator (?? terms))
+	(and (not (sorted? terms expr<?))
+	     `(,operator ,@(sort terms expr<?)))))
 
 (define (idempotence operator)
   (define (remove-consecutive-duplicates lst)
