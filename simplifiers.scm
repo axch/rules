@@ -43,7 +43,8 @@
   ;; Flipping one at a time is bubble sort
   #;
   (rule `(,operator (?? a) (? y) (? x) (?? b))
-        `(,operator ,@a ,x ,y ,@b))
+        (and (expr<? x y)
+             `(,operator ,@a ,x ,y ,@b)))
   ;; Finding a pair out of order and sorting is still quadratic,
   ;; because the matcher matches N times, and each requires
   ;; constructing the segments so they can be handed to the handler
@@ -67,7 +68,7 @@
           (else
            (cons (car lst) (remove-consecutive-duplicates (cdr lst))))))
   (rule `(,operator (?? a) (? x) (? x) (?? b))
-        #; `(or ,@a ,x ,@b) ; One at a time is too slow
+        #; `(,operator ,@a ,x ,@b) ; One at a time is too slow
         `(,operator ,@(remove-consecutive-duplicates `(,@a ,x ,@b)))))
 
 ;;;; Some algebraic simplification rules
