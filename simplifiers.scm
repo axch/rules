@@ -129,7 +129,7 @@
                    b))))
 
 (define simplify-algebra
-  (iterate-until-stable
+  (iterated
    (compose (rule-simplifier (list distributive-law))
             simplify-sums
             simplify-products)))
@@ -349,14 +349,14 @@
 
 (define ->conjunctive-normal-form
   (compose
-   (iterate-until-stable
+   (iterated
     (compose (rule-simplifier (list push-or-through-and))
              simplify-ands
              simplify-ors))
    simplify-negations))
 
 ;; (define do-resolution
-;;   (iterate-until-stable
+;;   (iterated
 ;;    (compose
 ;;     (rule-simplifier (list resolution-1 resolution-2))
 ;;     ->conjunctive-normal-form)))

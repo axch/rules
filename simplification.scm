@@ -124,14 +124,6 @@
      (,symbol?  . ,symbol<?)
      (,list?    . ,list<?))))
 
-(define (iterate-until-stable simplifier)
-  (define (simp exp)
-    (let ((newexp (simplifier exp)))
-      (if (equal? exp newexp)
-	  exp
-	  (simp newexp))))
-  simp)
-
 (define compose
   (if (lexical-unbound? (the-environment) 'compose)
       (lambda fs
