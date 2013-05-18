@@ -18,6 +18,47 @@
 
 (declare (usual-integrations))
 
+(define ((rule-list rules) data)
+  (let per-rule ((rules rules))
+    (if (null? rules)
+	data
+	(let ((answer ((car rules) data)))
+	  (if (eq? data answer)
+	      (per-rule (cdr rules))
+	      answer)))))
+
+(define (iterated the-rule)
+  (lambda (data)
+    (let loop ((data data)
+	       (answer (the-rule data)))
+      (if (eq? answer data)
+	  answer
+	  (loop answer (the-rule answer))))))
+
+(define (try-subexpressions the-rule expression)
+  (if (list? expression)
+      (let ((subexpressions-tried (map the-rule expression)))
+        (if (every eq? expression subexpressions-tried)
+            expression
+            subexpressions-tried))
+      expression))
+
+(define (on-subexpressions the-rule)
+  (define (on-expression expression)
+    (let ((subexpressions-done (try-subexpressions on-expression expression)))
+      (the-rule subexpressions-done)))
+  on-expression)
+
+(define (iterated-on-subexpressions the-rule)
+  ;; Unfortunately, this is not just a composition of the prior two.
+  (define (on-expression expression)
+    (let ((subexpressions-done (try-subexpressions on-expression expression)))
+      (let ((answer (the-rule subexpressions-done)))
+	(if (eq? answer subexpressions-done)
+	    answer
+	    (on-expression answer)))))
+  on-expression)
+
 ;;; RULE-SIMPLIFIER makes term-rewriting systems from collections of
 ;;; rules.  Given a collection of rules, the term-rewriting system
 ;;; will apply them repeatedly to all possible subexpressions of the
@@ -28,30 +69,29 @@
 ;;; amount of time.
 
 (define (rule-simplifier the-rules)
-  (let ((unique-object (list)))
-    (define (make-unfakeable-box thing)
-      (cons unique-object thing))
-    (define (unfakeable-box? thing)
-      (and (pair? thing)
-	   (eq? (car thing) unique-object)))
-    (define unfakeable-contents cdr)
-    (define (compute-simplify-expression expression)
-      (let ((subexpressions-simplified
-	     (if (list? expression)
-		 (map simplify-expression expression)
-		 expression)))
-	(let ((answer (try-rules
-		       subexpressions-simplified the-rules
-		       (lambda (result fail) (make-unfakeable-box result))
-		       (lambda () #f))))
-	  (cond ((unfakeable-box? answer)
-		 (simplify-expression (unfakeable-contents answer)))
-		((not answer)
-		 subexpressions-simplified)
-		(else
-		 (simplify-expression answer))))))
-    (define simplify-expression (rule-memoize compute-simplify-expression))
-    simplify-expression))
+  (iterated-on-subexpressions (rule-list the-rules)))
+
+(define (top-down the-rule)
+  (define (on-expression expression)
+    (let ((answer (the-rule expression)))
+      (if (eq? answer expression)
+          (let ((subexpressions-done
+                 (try-subexpressions on-expression expression)))
+            (let ((answer (the-rule subexpressions-done)))
+              (if (eq? answer subexpressions-done)
+                  answer
+                  (on-expression answer))))
+          (on-expression answer))))
+  on-expression)
+
+(define (in-order . the-rules)
+  (lambda (datum)
+    (let loop ((the-rules the-rules)
+               (datum datum))
+      (if (null? the-rules)
+          datum
+          (loop (cdr the-rules)
+                ((car the-rules) datum))))))
 
 (define (list<? x y)
   (let ((nx (length x)) (ny (length y)))
