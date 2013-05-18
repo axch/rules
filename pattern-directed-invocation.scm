@@ -170,33 +170,3 @@
 ;         (list '* a b))))
 ;Unspecified return value
 |#
-
-;;; Pattern-directed factorial, with and without the rule macro.
-
-#|
- (define factorial (make-pattern-operator))
-
- (attach-rule! factorial (rule '(0) 1))
-
- (attach-rule! factorial
-  (rule `((? n ,positive?))
-        (* n (factorial (- n 1)))))
-
- (factorial 10)
- ;Value: 3628800
-|#
-
-#|
- (define factorial (make-pattern-operator))
-
- (attach-rule! factorial
-  (make-rule '((? n))
-   (lambda (n) (* n (factorial (- n 1))))))
-
- (attach-rule! factorial
-  (make-rule '(0) (lambda () 1)))
-
- (factorial 10)
- ;Value: 3628800
-|#
-
