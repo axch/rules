@@ -30,7 +30,7 @@
   (assert-equal (length expected) (length got))
   (assert-true (every dict:equal? expected got)))
 
-(load-relative "../../testing/load")
+(load-relative "../testing/load")
 (load-relative "matcher-test")
 (load-relative "pattern-directed-invocation-test")
 (load-relative "simplification-test")
