@@ -47,10 +47,10 @@ Writing them out as an explicit list of concise rules like this:
       x)
 
 (rule `(* (? n1 ,number?) (? n2 ,number?))
-      (* n1 n2))
+      (* n1 n2))              ; multiply
 
 (rule '(+ (?? t1) (expt (sin (? theta)) 2) (?? t2) (expt (cos (? theta)) 2) (?? t3))
-      `(+ 1 ,@t1 ,@t2 ,@t3))
+      `(+ 1 ,@t1 ,@t2 ,@t3))  ; build a list with a + in front
 ```
 makes it easier to see what the simplifier is actually doing, and
 therefore easier to get it right.
