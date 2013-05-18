@@ -16,6 +16,9 @@
 ;;; License along with Rules; if not, see
 ;;; <http://www.gnu.org/licenses/>.
 
+(define (assert-unchanged datum rule)
+  (assert-eq datum (rule datum)))
+
 (in-test-group
  simplification
 
@@ -57,7 +60,7 @@
    (assert-equal
     '(+ 2 3)
     (sort-numbers '(+ 3 2)))
-   (assert-false (sort-numbers '(+ 2 3))))
+   (assert-unchanged '(+ 2 3) sort-numbers))
  (define-test (parametric-rule-smoke)
    (assert-equal
     #f
@@ -165,7 +168,7 @@
  (define-test (commutativity-check-test)
    (let* ((len 10) ; linear
 	  (items `(and ,@(iota len))))
-     (check (not ((commutativity 'and) items)))))
+     (check (eq? items ((commutativity 'and) items)))))
 
  (define-test (commutativity-rule-test)
    (let* ((len 10) ; N log N

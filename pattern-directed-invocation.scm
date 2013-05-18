@@ -22,26 +22,42 @@
 ;;; pattern determines the applicability of the rule and the match
 ;;; bindings that enable it, and the handler can compute an arbitrary
 ;;; value from them.  Once constructed, a rule is a procedure that
-;;; accepts a datum, and returns either #f if the pattern doesn't
-;;; match or the value of the handler when applied to the dictionary
-;;; if it does.  This code contains a solution to the consequent
-;;; sentinel value issue, but I don't like it.
+;;; accepts a datum, and returns either the datum if the pattern
+;;; doesn't match or the value of the handler when applied to the
+;;; dictionary if it does.  The input datum is used as the sentinel
+;;; value for failure because in the context of term rewriting,
+;;; succeeding with the input as the answer is equivalent to failing.
+
+;;; The handler can reject a putative match by returning #f, which
+;;; causes backtracking into the matcher, and may cause the handler to
+;;; be called again with different bindings.  If the handler always
+;;; returns #f, the rule may fail even though its pattern matched.
+;;; The handler can force success with an arbitrary object (including
+;;; #f) by returning the result of calling `succeed' on the value to
+;;; return.
+
+;;; For situations where it is desirable to distinguish rule failure
+;;; from success with the input, the rule procedure accepts an
+;;; optional second argument to use as a token to indicate failure.
+;;; If the second argument is given, it is returned on failure, and
+;;; the input datum (along with all other objects) indicates success.
+;;; The token is not stored and is not passed to handlers.  It is up
+;;; to the caller to make sure that this token is unique.
 
 (define (make-rule pattern handler)
   (if (user-handler? handler)
       (make-rule pattern (user-handler->system-handler
 			  handler (match:pattern-names pattern)))
       (let ((pattern-combinator (->combinators pattern)))
-	(lambda (data #!optional succeed fail)
-	  (if (default-object? succeed)
-	      (set! succeed (lambda (value fail) (make-success value))))
-	  (if (default-object? fail)
-	      (set! fail (lambda () #f)))
+	(lambda (data #!optional fail-token)
+	  (if (default-object? fail-token)
+	      (set! fail-token data))
 	  (interpret-success
 	   (pattern-combinator data
 	    (lambda (dict fail)
-	      (handler dict succeed fail))
-	    fail))))))
+	      (handler dict (lambda (value fail) (make-success value)) fail))
+            ;; Otherwise would screw up if the data was a success object
+	    (lambda () (make-success fail-token))))))))
 
 ;;; A pattern directed operator is a collection of rules, one of which
 ;;; is expected to match any datum that the operator may be given.
@@ -57,12 +73,14 @@
   (make-entity operator (if (default-object? rules) '() rules)))
 
 (define (try-rules data rules succeed fail)
-  (let per-rule ((rules rules))
-    (if (null? rules)
-	(fail)
-	((car rules) data succeed
-	 (lambda ()
-	   (per-rule (cdr rules)))))))
+  (let ((token (list 'fail)))
+    (let per-rule ((rules rules))
+      (if (null? rules)
+          (fail)
+          (let ((answer ((car rules) data token)))
+            (if (eq? answer token)
+                (per-rule (cdr rules))
+                (succeed answer (lambda () (per-rule (cdr rules))))))))))
 
 (define (attach-rule! operator rule)
   (set-entity-extra! operator
