@@ -34,9 +34,3 @@
 (load-relative "matcher-test")
 (load-relative "pattern-directed-invocation-test")
 (load-relative "simplification-test")
-
-(define (run-tests-and-exit)
-  (let ((v (show-time run-registered-tests)))
-    (newline)
-    (flush-output)
-    (%exit v)))
