@@ -39,6 +39,7 @@ simplifier for algebraic expressions needs to know many things like
   numbers n1, n2)
 - If you see sin^2(x) and cos^2(x) in the same sum, turn them into
   1
+- ...
 
 Writing them out as an explicit list of concise rules like this:
 
