@@ -278,6 +278,24 @@ does the same thing:
 Pattern Dispatch
 ================
 
+A _pattern-dispatch operator_ (like the `factorial` example in the
+[Introduction](#introduction)) is a collection of rules, one of which
+is expected to match any datum that the operator may be given.  The
+operator will attempt the rules in some unspecified order, and return
+the result if any rule matches (which result is unspecified if more
+than one rule matches).  This is a case where the distinction between
+a rule not matching and a rule matching and returning its input is
+significant.
+
+- `(pattern-dispatch <rule> ...)`
+
+  Returns a pattern-dispatch operator whose initial set of rules is
+  given by the arguments.
+
+- `(attach-rule! <operator> <rule>)`
+
+  Adds another rule to an existing pattern-dispatch operator.
+
 Term Rewriting
 ==============
 
