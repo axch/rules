@@ -123,11 +123,13 @@ anywhere in a sum".  In detail:
 
 - Match a list
 - Whose first element is the symbol `+`
-- That has some elements after the first, named collectively `stuff`
-- Such that there is an element after `stuff`, named `x`
-- Such that the next element after `x` is `equal?` to `x`
-- And the list contains any number of elements after the second
-  occurrence of `x`, named collectively `more`.
+- That has some elements after the first
+  - Which bind to the name `stuff`
+- Such that there is an element after `stuff`
+  - Which bind to the name `x`
+- Such that there is an element after `x`
+  - Such that this element is `equal?` to `x`
+- And bind any subsequent elements of the list to the name `more`.
 
 Note that the matcher will search over all possible lengths for the
 `stuff` list to find a match (but the length of the `more` list can be
