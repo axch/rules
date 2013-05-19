@@ -38,5 +38,6 @@
 (define (rule-memoize f) f)
 
 (load-relative-compiled "rules")
+(load-relative-compiled "pattern-dispatch")
 (load-relative-compiled "term-rewriting")
 (load-relative-compiled "simplifiers")

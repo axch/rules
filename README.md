@@ -408,10 +408,11 @@ therein.
 
   - `patterns.scm`: Pattern matcher in the combinator style, and a
     compiler for it.
-  - `rules.scm`: Rules, and composition thereof
-    into pattern-dispatch operators.
-  - `term-rewriting.scm`: Definition of a term rewriting engine and a
-    few useful variations on the theme.
+  - `rules.scm`: Rules.
+  - `pattern-dispatch.scm`: Composition of rules into pattern-dispatch
+    operators.
+  - `term-rewriting.scm`: Composition of rules into a term rewriting
+    engine and a few useful variations on the theme.
   - `simplifiers.scm`: Simplification of algebraic and logical
     expressions by means of term rewriting.
 

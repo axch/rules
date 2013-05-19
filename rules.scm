@@ -58,36 +58,6 @@
 	      (handler dict (lambda (value fail) (make-success value)) fail))
             ;; Otherwise would screw up if the data was a success object
 	    (lambda () (make-success fail-token))))))))
-
-;;; A pattern directed operator is a collection of rules, one of which
-;;; is expected to match any datum that the operator may be given.
-;;; The operator tries the rules in order until the first matches, and
-;;; returns the value given by that one; if none match, it errors out.
-
-(define (make-pattern-operator rules)
-  (define (operator self . arguments)
-    (define (succeed value fail) value)
-    (define (fail)
-      (error "No applicable operations" self arguments))
-    (try-rules arguments (entity-extra self) succeed fail))
-  (make-entity operator rules))
-
-(define (pattern-dispatch . rules)
-  (make-pattern-operator rules))
-
-(define (try-rules data rules succeed fail)
-  (let ((token (list 'fail)))
-    (let per-rule ((rules rules))
-      (if (null? rules)
-          (fail)
-          (let ((answer ((car rules) data token)))
-            (if (eq? answer token)
-                (per-rule (cdr rules))
-                (succeed answer (lambda () (per-rule (cdr rules))))))))))
-
-(define (attach-rule! operator rule)
-  (set-entity-extra! operator
-   (cons rule (entity-extra operator))))
 
 ;;; The user-handler is expected to be a procedure that binds the
 ;;; variables that appear in the match and uses them somehow.  This
