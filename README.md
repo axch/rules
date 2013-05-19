@@ -204,6 +204,70 @@ following rules:
 Rules
 =====
 
+A rule is a pairing of a pattern and an expression (the _body_) to
+evaluate if the pattern matches.  The useful thing about rules is that
+the expression has access to the bindings of the variables matched by
+the pattern.
+
+- `(rule <pattern> <expression>)`: Rule macro
+
+  Returns a procedure that accepts one argument and tries to match the
+  `pattern` against that argument.  If the match succeeds, evaluates
+  the `expression` in an environment extended with the bindings
+  determined by the match and returns the result.  If the match fails,
+  returns the original input unchanged.
+
+In order to support conditions on the applicability of rules that are
+inconvenient to capture in the pattern, the expression may return `#f`
+to force the rule application to backtrack back into the matcher (or
+fail).
+
+- `(rule <pattern> <expression>)`: Rule macro (cont'd)
+
+  If the `expression` returns `#f`, the rule procedure interprets that
+  particular match of the pattern as having failed after all, and
+  evaluates the `expression` with the bindings from another match, if
+  any.  If the `expression` returns `#f` for all sets of bindings that
+  cause the pattern to match, the rule procedure returns its input
+  unchanged.
+
+Unfortunately, this means that special measures are necessary to allow
+the body of a rule to cause the rule procedure to return `#f`.
+
+- `(succeed <thing>)`: Procedure
+
+  A helper procedure to allow the body of a rule to cause its
+  enclosing rule invocation to return any`thing`, including `#f`.
+
+- `(rule <pattern> <expression>)`: Rule macro (cont'd)
+
+  If the `expression` returns the result of calling `succeed` on an
+  object, the rule procedure returns that object (even if the object
+  is `#f`, which the rule procedure would otherwise interpret as a
+  command to try a different match).
+
+Also, while for purposes of term rewriting, a "rule firing" that
+didn't change the input is equivalent to the rule not having fired at
+all, in other circumstances it is sometimes necessary to distinguish
+between a rule matching and intentionally returning its input vs a
+rule not matching at all.  For this purpose, rule procedures actually
+accept an optional second argument, which, if supplied, acts as a
+token to return on failing to match (instead of the input).
+
+- `(rule <pattern> <expression>)`: Rule macro (cont'd)
+
+  The returned rule procedure accepts an optional second argument.  If
+  supplied, this argument is returned (instead of the first argument)
+  on failure to match the pattern (or on exhaustion of backtracking
+  options).
+
+
+Pattern Dispatch
+================
+
+Term Rewriting
+==============
+
 Extension
 =========
 
