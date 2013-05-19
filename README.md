@@ -139,7 +139,7 @@ Concepts
 --------
 
 A pattern gives a shape for a piece of data, with some "holes" --
-variables -- for components of the data that may vary.  A successful
+_variables_ -- for components of the data that may vary.  A successful
 match entails a binding of data components to variables such that, if
 the variables are replaced with their bindings, the pattern and the
 data become `equal?`.  If no such binding is possible, the match
@@ -150,12 +150,12 @@ structure like a list is built out of patterns for its pieces.  This
 allows patterns to recognize very specific, complex shapes in their
 data, and extract deeply nested data components.
 
-Sublists of unknown length may be matched with `segment variables`,
+Sublists of unknown length may be matched with _segment variables_,
 which entail search within the matcher to find a matching assignment.
 
-Unlike other pattern matching systems, _variables may appear more than
-once_ in a pattern.  This just means that each occurrence of the same
-variable must contain `equal?` data for a successful match.
+Unlike other pattern matching systems, *variables may appear more than
+once* in a pattern.  This just means that each occurrence of the same
+variable must correspond to `equal?` data for a successful match.
 
 Reference
 ---------
