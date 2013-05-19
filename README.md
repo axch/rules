@@ -497,13 +497,19 @@ viewed as a bug.x
 Unimplemented Features
 ======================
 
-More matchers: There are plenty of additional matcher types that may
+More matchers
+-------------
+
+There are plenty of additional matcher types that may
 be worth implementing.  For example, something akin to the repetition
 operator of regular expressions, that accumulates the values from
 successive matches as lists of matched items.  That was the point of
 making this machine extensible -- go nuts.
 
-More backtracking: In principle, the same mechanism used to control
+More backtracking
+-----------------
+
+In principle, the same mechanism used to control
 backtracking in the pattern matcher can be extended to the bodies of
 rules, so that said bodies can offer retractable substitutions that
 can be changed if they are found unacceptable later.  For this system,
@@ -515,7 +521,10 @@ pattern matchers can then be rewritten).  If you feel that you want
 this, I hope the present system can serve as a useful example for
 writing your own.
 
-Specificity dispatch: In principle, pattern-dispatch operators can
+Specificity dispatch
+--------------------
+
+In principle, pattern-dispatch operators can
 analyze the rules they are dispatching with and select the most
 specific of matching rules (rather than the first added) to apply.
 Implementing this in the present system is impeded by the fact that
@@ -528,7 +537,10 @@ specificity dispatch impossible in general (without requiring some
 kind of additional user-supplied information about the relationships
 of any new matchers and any restriction predicates to each other).
 
-Performance: Some attention has been given to making sure that at
+Performance
+-----------
+
+Some attention has been given to making sure that at
 least common rules will have the asymptotic performace one would wish,
 further performance improvements are possible:
 
