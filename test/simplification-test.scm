@@ -122,7 +122,7 @@
    (let ((items (iota 10))) ; linear
      (assert-equal
       items
-      ((rule-simplifier (list find-consecutive-dups))
+      ((iterated-on-subexpressions find-consecutive-dups)
        items))))
 
  (define-test (associativity-test)
@@ -132,7 +132,7 @@
 	  (items (cons '+ (make-list len (cons '+ sublist)))))
      (check (equal?
 	     (cons '+ (apply append (make-list len sublist)))
-	     ((rule-simplifier (list plus-assoc))
+	     ((iterated-on-subexpressions plus-assoc)
 	      items)))))
 
  (define-test (removing-duplicates)
@@ -142,13 +142,13 @@
    (let ((items (make-list 10 'foo))) ; quadratic + gc pressure
      (assert-equal
       '(foo)
-      ((rule-simplifier (list find-consecutive-dups))
+      ((iterated-on-subexpressions find-consecutive-dups)
        items)))
    (let* ((len 10) ; quadratic + gc pressure
 	  (items (append (iota len) (make-list len 'foo))))
      (assert-equal
       (append (iota len) '(foo))
-      ((rule-simplifier (list find-consecutive-dups))
+      ((iterated-on-subexpressions find-consecutive-dups)
        items))))
 
  (define-test (removing-duplicates-the-easy-way)
@@ -156,13 +156,13 @@
    (let ((items (cons 'or (make-list 10 'foo)))) ; linear
      (assert-equal
       '(or foo)
-      ((rule-simplifier (list or-idempotent))
+      ((iterated-on-subexpressions or-idempotent)
        items)))
    (let* ((len 10) ; linear
 	  (items (cons 'or (append (iota len) (make-list len 'foo)))))
      (assert-equal
       (cons 'or (append (iota len) '(foo)))
-      ((rule-simplifier (list or-idempotent))
+      ((iterated-on-subexpressions or-idempotent)
        items))))
 
  (define-test (commutativity-check-test)
@@ -184,7 +184,7 @@
      (check
       (equal?
        `(and ,@(iota len))
-       ((rule-simplifier (list (commutativity 'and))) items)))))
+       ((iterated-on-subexpressions (commutativity 'and)) items)))))
 
  (define-test (simplifying-sums)
    (let ((len 10)) ; linear

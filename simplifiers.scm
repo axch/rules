@@ -325,7 +325,7 @@
 ;; (define do-resolution
 ;;   (iterated
 ;;    (compose
-;;     (rule-simplifier (list resolution-1 resolution-2))
+;;     (term-rewriting resolution-1 resolution-2)
 ;;     ->conjunctive-normal-form)))
 
 (define simplify-logic ->conjunctive-normal-form)
