@@ -484,10 +484,78 @@ implement `rule` (notably a macro system permitting controlled
 non-hygiene).  I expect Rules to run unmodified on any platform MIT
 Scheme supports.
 
+Bugs
+====
+
+The procedures returned by the [term-rewriting
+combinators](#term-rewriting) do not obey exactly the same interface
+as rules, in that they do not accept the optional argument that allows
+the user of a rule to tell the difference between the rule failing to
+match and matching but returning identically the input.  This could be
+viewed as a bug.x
+
 Unimplemented Features
 ======================
 
-- Trie implemetation of rule-list TODO
+More matchers: There are plenty of additional matcher types that may
+be worth implementing.  For example, something akin to the repetition
+operator of regular expressions, that accumulates the values from
+successive matches as lists of matched items.  That was the point of
+making this machine extensible -- go nuts.
+
+More backtracking: In principle, the same mechanism used to control
+backtracking in the pattern matcher can be extended to the bodies of
+rules, so that said bodies can offer retractable substitutions that
+can be changed if they are found unacceptable later.  For this system,
+I decided not to mess with that -- unlimited chronological
+backtracking leads to well known trouble, and I feel that such an
+extension would be better done by first embedding a general-purpose
+backtracking mechanism into the programming language (in which the
+pattern matchers can then be rewritten).  If you feel that you want
+this, I hope the present system can serve as a useful example for
+writing your own.
+
+Specificity dispatch: In principle, pattern-dispatch operators can
+analyze the rules they are dispatching with and select the most
+specific of matching rules (rather than the first added) to apply.
+Implementing this in the present system is impeded by the fact that
+rules are opaque, so there is actually no way to examine two rules and
+determine whether one is more specific than another.  That much could
+be fixed, but the extensibility of the pattern matcher to arbitrary
+user-supplied matchers, as well as the ability of user-supplied rule
+bodies to reject matches for arbitrarily complex reasons, makes
+specificity dispatch impossible in general (without requiring some
+kind of additional user-supplied information about the relationships
+of any new matchers and any restriction predicates to each other).
+
+Performance: Some attention has been given to making sure that at
+least common rules will have the asymptotic performace one would wish,
+further performance improvements are possible:
+
+- In principle, once there is only one segment variable left among the
+  subpatterns of a list pattern, no search is necessary to determine
+  how many elements of the list to match it with.  At the moment this
+  optimization is only applied in the common case that the segment
+  variable in question is the last subpattern in the list.
+
+- In principle, `rule-list` and `pattern-dispatch` could eliminate the
+  work of matching common prefixes of multiple rules by using a trie
+  structure to match all their rules at once.  Implementing this is
+  impeded in the present program by the fact that rules are opaque, so
+  there is actually no way to know whether two rules would start with
+  the same tests or not.  That much could be fixed; but the fact that
+  the pattern language allows user extension with arbitrary matchers
+  further limits the ultimate applicability of this extension.
+
+- In principle, much work could be done to optimize the rule
+  application order used by `term-rewriting`; especially by examining
+  the rules and computing the circumstances under which applications
+  of them can produce results upon which further rules may be
+  applicable.  In the present program this is impeded by the
+  above-mentioned opacity of rules, and also by the fact that in
+  principle the rule bodies are arbitrary Scheme expressions that can
+  return anything.
+
 
 Author
 ======
