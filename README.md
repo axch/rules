@@ -577,8 +577,8 @@ Alexey Radul, <axch@mit.edu>
 License
 =======
 
-This file is part of Rules, a pattern matching, pattern dispatch,
-and term rewriting system for MIT Scheme.
+This file is part of Rules, an extensible pattern matching, pattern
+dispatch, and term rewriting system for MIT Scheme.
 Copyright 2010 Alexey Radul.
 
 Rules is free software; you can redistribute it and/or modify it under
