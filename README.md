@@ -322,6 +322,13 @@ pattern and return their input on failure, so these combinators nest.
   mutate its input unless the bodies of the rules do.)  In particular,
   if no rules match, returns its input unchanged (up to `eqv?`).
 
+  For purposes of determining substructure, the input is interpreted
+  as an expression tree: to wit, an arbitrarily deep list of lists (as
+  opposed to a tree of pairs).  For example, given the input
+  `(* (+ a b) (+ c d))`, the rule would be applied to `*`, `+`, `a`,
+  `b`, `(+ a b)`, `(+ c d)`, the input itself, and any results the
+  rule may produce from such applications.
+
 - `(rule-list <list of rules>)`
 
   Returns a procedure that tries each of its rules in order on its
@@ -335,11 +342,11 @@ pattern and return their input on failure, so these combinators nest.
 - `(in-order <list of rules>)`
 
   Returns a procedure that accepts one argument and applies each rule
-  in the list to it once, in the order given, chaining results
-  (whether the rules match or not).  The effect is actually the same
-  as composing the rules as functions, in the proper order.  Note: if
-  none of the rules match, the net result is returning the input
-  unchanged (up to `eqv?`).
+  in the list to it once, in the order given, passing the results from
+  one rule to the next (whether the rules match or not).  The effect
+  is actually the same as composing the rules as functions, in the
+  proper order.  Note: if none of the rules match, the net result is
+  returning the input unchanged (up to `eqv?`).
 
 - `(iterated <rule>)`
 
@@ -349,26 +356,20 @@ pattern and return their input on failure, so these combinators nest.
   returns its input unchanged (up to `eqv?`).
 
   Note: This is most useful with rules that are not idempotent, such
-  as may arise as the outputs out of the other combinators, like
+  as may arise as the outputs of the other combinators, like
   `rule-list`.
 
 - `(on-subexpressions <rule>)`
 
   Returns a procedure that applies its rule to every point in the list
   structure of its input, bottom-up, including the input itself, and
-  returns the final result.  The input is not mutated (unless by the
-  body of the rule).  If the rule never matches, the procedure returns
-  its input unchanged (up to `eqv?`).  This is different from
-  `term-rewriting` because it applies the rule only once at each
-  point, whether it matches or not.
-
-  For purposes of determining substructure, the input is interpreted
-  as an arbitrarily deep list of lists (as opposed to a tree of
-  pairs).  For example, given the input `(* (+ a b) (+ c d))`, the
-  rule would be applied to `*`, `+`, `a`, `b`, `(+ a b)`, `(+ c d)`,
-  and the input itself, in that order.  If the rule matched
-  any element, the result would be substituted when trying the rule
-  on the list incorporating that element.
+  returns the final result.  If the rule matches any subexpression,
+  the rule's result is placed in the appropriate place before matching
+  the expression it was a subexpression of.  The input is not mutated
+  (unless by the body of the rule).  If the rule never matches, the
+  procedure returns its input unchanged (up to `eqv?`).  This is
+  different from `term-rewriting` because it applies the rule only
+  once at each point, whether it matches or not.
 
 - `(iterated-on-subexpressions <rule>)`
 
