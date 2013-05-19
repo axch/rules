@@ -325,9 +325,10 @@ pattern and return their input on failure, so these combinators nest.
   For purposes of determining substructure, the input is interpreted
   as an expression tree: to wit, an arbitrarily deep list of lists (as
   opposed to a tree of pairs).  For example, given the input
-  `(* (+ a b) (+ c d))`, the rule would be applied to `*`, `+`, `a`,
-  `b`, `(+ a b)`, `(+ c d)`, the input itself, and any results the
-  rule may produce from such applications.
+  `(* (+ a b) (+ c d))`, the rules would be applied to `*`, `+`, `a`,
+  `b`, `(+ a b)`, `(+ c d)`, the input itself, and any results (and
+  subexpressions thereof) the rules may produce from such
+  applications.
 
 - `(rule-list <list of rules>)`
 
