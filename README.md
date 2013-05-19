@@ -129,6 +129,10 @@ anywhere in a sum".  In detail:
 - And the list contains any number of elements after the second
   occurrence of `x`, named collectively `more`.
 
+Note that the matcher will search over all possible lengths for the
+`stuff` list to find a match (but the length of the `more` list can be
+deduced, because it must take whatever is left in the sum).
+
 Concepts
 --------
 
