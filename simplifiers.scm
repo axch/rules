@@ -124,9 +124,10 @@
 
 (define simplify-algebra
   (iterated
-   (compose (term-rewriting distributive-law)
-            simplify-sums
-            simplify-products)))
+   (in-order
+    simplify-products
+    simplify-sums
+    (term-rewriting distributive-law))))
 
 (define simplify-quotient
   (term-rewriting
@@ -315,17 +316,18 @@
 ;;            ,@and-terms-2 ,@and-terms-3)))
 
 (define ->conjunctive-normal-form
-  (compose
+  (in-order
+   simplify-negations
    (iterated
-    (compose (term-rewriting push-or-through-and)
-             simplify-ands
-             simplify-ors))
-   simplify-negations))
+    (in-order
+     simplify-ors
+     simplify-ands
+     (term-rewriting push-or-through-and)))))
 
 ;; (define do-resolution
 ;;   (iterated
-;;    (compose
-;;     (term-rewriting resolution-1 resolution-2)
-;;     ->conjunctive-normal-form)))
+;;    (in-order
+;;     ->conjunctive-normal-form
+;;     (term-rewriting resolution-1 resolution-2))))
 
 (define simplify-logic ->conjunctive-normal-form)
