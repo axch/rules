@@ -215,7 +215,7 @@ matched by the pattern.
   `pattern` against that argument.  If the match succeeds, evaluates
   the `expression` in an environment extended with the bindings
   determined by the match and returns the result.  If the match fails,
-  returns the original input unchanged.
+  returns the original input unchanged (up to `eqv?`).
 
 In order to support conditions on the applicability of rules that are
 inconvenient to capture in the pattern, the body may return `#f` to
@@ -303,8 +303,95 @@ Term Rewriting
 Something like a peephole optimizer or a symbolic simplifier applies
 its rules to any sub-element of its input, replacing that part with
 the result of the rule; and keeps doing so until no rules apply
-anywhere within the input.  Such a thing is called a _term-rewriting
-system_.
+anywhere within the input, in which case it returns the final result.
+Such a thing is called a _term-rewriting system_.  Rules provides a
+collection of combinators for making term rewriting systems and
+similar operators out of rules.
+
+Note that the results of all the procedures in this section look like
+rules, in the sense that they try to match something according to some
+pattern and return their input on failure, so these combinators nest.
+
+- `(term-rewriting <rule> ...)`
+
+  Returns a term-rewriting procedure that applies the given rules.
+  The returned procedure accepts one argument, and applies any of its
+  rules at any matching point that occurs inside the list structure of
+  its argument, repeatedly replacing the match with the result of the
+  rule, until no rules apply.  Returns the final result.  (Does not
+  mutate its input unless the bodies of the rules do.)  In particular,
+  if no rules match, returns its input unchanged (up to `eqv?`).
+
+- `(rule-list <list of rules>)`
+
+  Returns a procedure that tries each of its rules in order on its
+  input (not subexpressions thereof) until one matches, and returns
+  the result.  Returns the input (up to `eqv?`) if no rules match.
+
+  Note: the returned procedure is slightly different from a
+  pattern-dispatch operator, in that it does not error out on failure,
+  but returns its input.
+
+- `(in-order <list of rules>)`
+
+  Returns a procedure that accepts one argument and applies each rule
+  in the list to it once, in the order given, chaining results
+  (whether the rules match or not).  The effect is actually the same
+  as composing the rules as functions, in the proper order.  Note: if
+  none of the rules match, the net result is returning the input
+  unchanged (up to `eqv?`).
+
+- `(iterated <rule>)`
+
+  Returns a procedure that repeatedly applies its rule to its input,
+  and returns the final result.  The input is not mutated (unless by
+  the body of the rule).  If the rule never matches, the procedure
+  returns its input unchanged (up to `eqv?`).
+
+  Note: This is most useful with rules that are not idempotent, such
+  as may arise as the outputs out of the other combinators, like
+  `rule-list`.
+
+- `(on-subexpressions <rule>)`
+
+  Returns a procedure that applies its rule to every point in the list
+  structure of its input, bottom-up, including the input itself, and
+  returns the final result.  The input is not mutated (unless by the
+  body of the rule).  If the rule never matches, the procedure returns
+  its input unchanged (up to `eqv?`).  This is different from
+  `term-rewriting` because it applies the rule only once at each
+  point, whether it matches or not.
+
+  For purposes of determining substructure, the input is interpreted
+  as an arbitrarily deep list of lists (as opposed to a tree of
+  pairs).  For example, given the input `(* (+ a b) (+ c d))`, the
+  rule would be applied to `*`, `+`, `a`, `b`, `(+ a b)`, `(+ c d)`,
+  and the input itself, in that order.  If the rule matched
+  any element, the result would be substituted when trying the rule
+  on the list incorporating that element.
+
+- `(iterated-on-subexpressions <rule>)`
+
+  Like `on-subexpressions`, except the returned procedure iterates on
+  each subexpression before trying a larger result.  Note that not
+  just the rule is iterated, but the rule is first reapplied to
+  subexpressions of the result, because the rule can produce structure
+  whose subexpressions might match the rule.  If the system defined by
+  the rule is confluent, this should produce the same result as
+  `(iterated (on-subexpressions <rule>))`, but matches are attempted
+  in a different order, leading to different performance
+  characteristics (and potentially different end results if the rule
+  is not confluent).
+
+- `(top-down <rule>)`
+
+  Like `iterated-on-subexpressions`, but also applies the rule
+  repeatedly to the whole input before recurring to subexpressions.
+
+Iteration patterns are hard to describe in words.  If you are still
+confused about the rule application order of `on-subexpressions`,
+`iterated-on-subexpressions`, or `top-down`, they are defined quite
+concisely in `simplification.scm`.
 
 Extension
 =========
