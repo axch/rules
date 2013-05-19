@@ -157,8 +157,8 @@ Unlike other pattern matching systems, *variables may appear more than
 once* in a pattern.  This just means that each occurrence of the same
 variable must correspond to `equal?` data for a successful match.
 
-Reference
----------
+Pattern Language
+----------------
 
 Patterns are Scheme list structure, interpreted according to the
 following rules:
@@ -200,6 +200,34 @@ following rules:
 
   Any other Scheme object is a pattern constant that matches only
   itself (up to `eqv?`).
+
+Matching
+--------
+
+Patterns can be compiled into matcher procedures that accept a datum
+and do something with the (possibly empty) set of bindings that make
+the datum match the pattern.
+
+- `(matcher <pattern>)`
+
+  Returns a procedure that accepts one object and returns an
+  association list mapping the names of the variables in the pattern
+  to pieces of the object such that the pattern and the object become
+  `equal?` upon substituting those bindings into the pattern.  If no
+  such mapping exists, the procedure returns `#f`.
+
+- `(for-each-matcher <pattern>)`
+
+  Returns a procedure that, given an object and a procedure, applies
+  the procedure it is given to each possible association list of
+  bindings of variable names to pieces of the object that make the
+  pattern match.  This procedure does not return anything useful.
+
+- `(all-results-matcher <pattern>)`
+
+  Returns a procedure that, given an object, returns a (possibly
+  empty) list of all association lists of bindings of variable names
+  to pieces of the object that make the pattern match.
 
 Rules
 =====
