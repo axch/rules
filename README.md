@@ -92,8 +92,8 @@ submodule update`.
 Patterns
 ========
 
-Example
--------
+Examples
+--------
 
 Here is a pattern that might be used for constant folding:
 
@@ -103,7 +103,7 @@ Here is a pattern that might be used for constant folding:
 
 This means, in detail:
 
-- Match a list
+- Match a list of exactly three elements
 - Whose first element is the symbol `*`
 - Whose second element produces true when given to the procedure
   `number?`
@@ -111,6 +111,23 @@ This means, in detail:
 - Whose third element also produces true when given to the procedure
   `number?`
   - Which bind to the name `y`
+
+Here is a pattern that might be used for simplification:
+
+```scheme
+'(+ (?? stuff) (? x) (? x) (?? more))
+```
+
+In brief, it means "find a pair of consecutive identical terms
+anywhere in a sum".  In detail:
+
+- Match a list
+- Whose first element is the symbol `+`
+- That has some elements after the first, named collectively `stuff`
+- Such that there is an element after `stuff`, named `x`
+- Such that the next element after `x` is `equal?` to `x`
+- And the list contains any number of elements after the second
+  occurrence of `x`, named collectively `more`.
 
 Concepts
 --------
