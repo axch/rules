@@ -29,7 +29,6 @@
   (self-relatively (lambda () (load filename))))
 
 (load-relative "support/auto-compilation")
-(load-relative-compiled "support/utils")
 (load-relative-compiled "support/eq-properties")
 (if (lexical-unbound? (the-environment) 'make-generic-operator)
     (load-relative-compiled "support/ghelper"))
