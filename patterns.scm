@@ -251,6 +251,24 @@
     (lambda (datum)
       (match-combinator datum '()
        (lambda (dictionary) dictionary)))))
+
+(define (first-dictionary matcher)
+  (lambda (datum)
+    (matcher datum '() 
+	     (lambda (dict)
+	       (interpret-segments-in-dictionary dict)))))
+
+(define (all-dictionaries matcher)
+  (lambda (datum)
+    (let ((results '()))
+      (matcher
+       datum
+       '()
+       (lambda (dict)
+	 (set! results (cons dict results))
+	 #f))
+      (map interpret-segments-in-dictionary
+	   (reverse results)))))
 
 #|
  ((match:->combinators '(a ((? b) 2 3) 1 c))
