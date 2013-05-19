@@ -54,7 +54,8 @@ Writing them out as an explicit list of concise rules like this:
       `(+ 1 ,@t1 ,@t2 ,@t3))  ; build a list with a + in front
 ```
 makes it easier to see what the simplifier is actually doing, and
-therefore easier to get it right.
+therefore easier to get it right.  Much the same thing happens with
+local optimization passes in compilers.
 
 The Rules software is an engine for
 
@@ -91,9 +92,97 @@ submodule update`.
 Patterns
 ========
 
+Example
+-------
+
+Here is a pattern that might be used for constant folding:
+
 ```scheme
-`(+ (? x ,number?) (? y ,number?))
+`(* (? x ,number?) (? y ,number?))
 ```
+
+This means, in detail:
+
+- Match a list
+- Whose first element is the symbol `*`
+- Whose second element produces true when given to the procedure
+  `number?`
+  - Which bind to the name `x`
+- Whose third element also produces true when given to the procedure
+  `number?`
+  - Which bind to the name `y`
+
+Concepts
+--------
+
+A pattern gives a shape for a piece of data, with some "holes" --
+variables -- for components of the data that may vary.  A successful
+match entails a binding of data components to variables such that, if
+the variables are replaced with their bindings, the pattern and the
+data become `equal?`.  If no such binding is possible, the match
+fails.
+
+Patterns are recursive, meaning that a pattern for a compound
+structure like a list is built out of patterns for its pieces.  This
+allows patterns to recognize very specific, complex shapes in their
+data, and extract deeply nested data components.
+
+Sublists of unknown length may be matched with `segment variables`,
+which entail search within the matcher to find a matching assignment.
+
+Unlike other pattern matching systems, _variables may appear more than
+once_ in a pattern.  This just means that each occurrence of the same
+variable must contain `equal?` data for a successful match.
+
+Reference
+---------
+
+Patterns are Scheme list structure, interpreted according to the
+following rules:
+
+- `(? <symbol> <procedure> ...)`: Pattern variable
+
+  The symbol serves as the variable's name.  The optional procedures
+  are used as predicates that restrict the possible data this variable
+  may be bound to.  This pattern matches any datum that passes all of
+  the predicates, and binds the given name to that datum.  If any
+  predicate returns `#f` on the datum, this pattern fails to match.
+  In the common case of no predicates, this pattern always matches.
+
+- `(?? <symbol>)`: Segment variable
+
+  This pattern must occur as a subpattern of a list pattern.  The
+  symbol serves as the variable's name.  This pattern matches a
+  sublist of the enclosing list of any length (including zero) and
+  binds that sublist to the given name.
+
+- `(<pattern> ...)`: List
+
+  A list whose first symbol is neither `?` nor `??` is a pattern that
+  matches a list if and only if the elements of the data list match
+  the subpatterns of the list pattern (in order).  In this case, the
+  list pattern binds all the variables bound by its subpatterns.  If
+  more than one subpattern binds the same name, those data must agree
+  (up to `equal?`).  Variable-length lists can be matched using
+  segment variables.
+
+- `<procedure>`: Explicit combinator
+
+  A Scheme procedure that appears as a pattern is taken to be a
+  matcher combinator (see [Extension](#extension)).  In particular, to
+  match the literal list `(? x)` (which, if used as a pattern, would
+  become a variable), you can use ``(,(match:eqv '?) x)`.
+
+- `<object>`: Constant
+
+  Any other Scheme object is a pattern constant that matches only
+  itself (up to `eqv?`).
+
+Rules
+=====
+
+Extension
+=========
 
 Developer Documentation
 =======================
