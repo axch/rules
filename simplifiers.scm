@@ -93,33 +93,27 @@
 
 
 (define simplify-sums
-  (rule-simplifier
-   (list
-
-    (nullary-replacement '+ 0)
-    (unary-elimination '+)
-    (constant-elimination '+ 0)
-    (rule `(+ (? x ,number?) (? y ,number?) (?? z))
-          `(+ ,(+ x y) ,@z))
-    (associativity '+)
-    (commutativity '+)
-
-    )))
+  (term-rewriting
+   (nullary-replacement '+ 0)
+   (unary-elimination '+)
+   (constant-elimination '+ 0)
+   (rule `(+ (? x ,number?) (? y ,number?) (?? z))
+         `(+ ,(+ x y) ,@z))
+   (associativity '+)
+   (commutativity '+)
+   ))
 
 (define simplify-products
-  (rule-simplifier
-   (list
-
-    (nullary-replacement '* 1)
-    (unary-elimination '*)
-    (constant-elimination '* 1)
-    (constant-promotion '* 0)
-    (rule `(* (? x ,number?) (? y ,number?) (?? z))
-          `(* ,(* x y) ,@z))
-    (associativity '*)
-    (commutativity '*) ;; TODO be able to turn this off?
-
-    )))
+  (term-rewriting
+   (nullary-replacement '* 1)
+   (unary-elimination '*)
+   (constant-elimination '* 1)
+   (constant-promotion '* 0)
+   (rule `(* (? x ,number?) (? y ,number?) (?? z))
+         `(* ,(* x y) ,@z))
+   (associativity '*)
+   (commutativity '*) ;; TODO be able to turn this off?
+   ))
 
 (define distributive-law
   (rule `(* (?? a) (+ (?? b)) (?? c))
@@ -130,29 +124,26 @@
 
 (define simplify-algebra
   (iterated
-   (compose (rule-simplifier (list distributive-law))
+   (compose (term-rewriting distributive-law)
             simplify-sums
             simplify-products)))
 
 (define simplify-quotient
-  (rule-simplifier
-   (list
+  (term-rewriting
+   (rule `(/ (? n) 1) n)
+   (rule `(/ 0 (? d)) 0)
 
-    (rule `(/ (? n) 1) n)
-    (rule `(/ 0 (? d)) 0)
+   (rule `(/ 1 (/ (? n) (? d)))
+         `(/ ,d ,n))
 
-    (rule `(/ 1 (/ (? n) (? d)))
-          `(/ ,d ,n))
-
-    (rule `(/ (? n) (? d))
-          (let ((g (g:gcd n d)))
-            (and (not (= g 1))
-                 (let ((nn (g:divide n g))
-                       (dd (g:divide d g)))
-                   (simplify-quotient
-                    `(/ ,nn ,dd))))))
-
-    )))
+   (rule `(/ (? n) (? d))
+         (let ((g (g:gcd n d)))
+           (and (not (= g 1))
+                (let ((nn (g:divide n g))
+                      (dd (g:divide d g)))
+                  (simplify-quotient
+                   `(/ ,nn ,dd))))))
+   ))
 
 ;;; For now:
 
@@ -162,166 +153,142 @@
   (error "Unimplemented divide" x y))
 
 (define ->quotient-of-sums
-  (rule-simplifier
-   (list
+  (term-rewriting
+   ;; Same denominator
+   (rule `(+ (?? a1) (/ (? n1) (? d)) (?? a2) (/ (? n2) (? d)) (?? a3))
+         (simplify-sums
+          `(+ ,(simplify-quotient
+                `(/ ,(simplify-sums `(+ ,n1 ,n2)) ,d))
+              ,@a1 ,@a2 ,@a3)))
 
-    ;; Same denominator
-    (rule `(+ (?? a1) (/ (? n1) (? d)) (?? a2) (/ (? n2) (? d)) (?? a3))
-          (simplify-sums
-           `(+ ,(simplify-quotient
-                 `(/ ,(simplify-sums `(+ ,n1 ,n2)) ,d))
-               ,@a1 ,@a2 ,@a3)))
+   ;; General Case
+   (rule `(+ (?? a1) (/ (? n1) (? d1)) (?? a2) (/ (? n2) (? d2)) (?? a3))
+         (simplify-sums
+          `(+ ,(simplify-quotient
+                `(/ ,(simplify-sums
+                      `(+ ,(simplify-products `(* ,n1 ,d2))
+                          ,(simplify-products `(* ,n2 ,d1))))
+                    ,(simplify-products `(* ,d1 ,d2))))
+              ,@a1 ,@a2 ,@a3)))
 
-    ;; General Case
-    (rule `(+ (?? a1) (/ (? n1) (? d1)) (?? a2) (/ (? n2) (? d2)) (?? a3))
-          (simplify-sums
-           `(+ ,(simplify-quotient
-                 `(/ ,(simplify-sums
-                       `(+ ,(simplify-products `(* ,n1 ,d2))
-                           ,(simplify-products `(* ,n2 ,d1))))
-                     ,(simplify-products `(* ,d1 ,d2))))
-               ,@a1 ,@a2 ,@a3)))
+   ;; Other terms
+   (rule `(+ (?? a1) (/ (? n) (? d)) (?? a2))
+         (simplify-quotient
+          `(/ ,(simplify-sums
+                `(+ ,n
+                    ,(simplify-products
+                      (* ,d ,(simplify-sums `(+ ,@a1 ,@a2))))))
+              ,d)))
 
-    ;; Other terms
-    (rule `(+ (?? a1) (/ (? n) (? d)) (?? a2))
-          (simplify-quotient
-           `(/ ,(simplify-sums
-                 `(+ ,n
-                     ,(simplify-products
-                       (* ,d ,(simplify-sums `(+ ,@a1 ,@a2))))))
-               ,d)))
-
-    )))
+   ))
 
 (define quotient-of-sums->sum-of-quotients
-  (rule-simplifier
-   (list
+  (term-rewriting
+   (rule `(/ (+ (?? as)) (? d))
+         `(+ ,@(map (lambda (n)
+                      (simplify-quotient
+                       `(/ ,n ,d)))
+                    as)))
 
-    (rule `(/ (+ (?? as)) (? d))
-          `(+ ,@(map (lambda (n)
-                       (simplify-quotient
-                        `(/ ,n ,d)))
-                     as)))
-
-    )))
+   ))
 
 (define simplify-expt
-  (rule-simplifier
-   (list
+  (term-rewriting
+   (rule `(expt (? a ,number?) (? b ,number?))
+         (s:expt a b))
 
-    (rule `(expt (? a ,number?) (? b ,number?))
-          (s:expt a b))
-
-    (rule `(expt (? b) 1) b)
-    (rule `(expt (? b) -1) `(/ 1 b))    ; Do we want this?
-    (rule `(expt 0 (? e)) 0)            ; Needs to be positive
-    (rule `(expt 1 (? e)) 1)
-
-    )))
+   (rule `(expt (? b) 1) b)
+   (rule `(expt (? b) -1) `(/ 1 b))     ; Do we want this?
+   (rule `(expt 0 (? e)) 0)             ; Needs to be positive
+   (rule `(expt 1 (? e)) 1)
+   ))
 
 (define remove-minus
-  (rule-simplifier
-   (list
-    (rule `(- (? x) (? y) (?? z))
-          `(+ ,x (* -1 (+ ,y ,@z))))
-    (rule `(- (? x)) `(* -1 ,x))
-    )))
+  (term-rewriting
+   (rule `(- (? x) (? y) (?? z))
+         `(+ ,x (* -1 (+ ,y ,@z))))
+   (rule `(- (? x)) `(* -1 ,x))
+   ))
 
 (define expand-expt
-  (rule-simplifier
-   (list
-
-    (rule `(expt (? x) (? n ,exact-integer? ,positive?))
-          `(* ,@(make-list n x)))
-
-    (rule `(expt (? x) (? n ,exact-integer? ,negative?))
-          `(/ 1 (* ,@(make-list n x))))
-
-    )))
+  (term-rewriting
+   (rule `(expt (? x) (? n ,exact-integer? ,positive?))
+         `(* ,@(make-list n x)))
+   (rule `(expt (? x) (? n ,exact-integer? ,negative?))
+         `(/ 1 (* ,@(make-list n x))))
+   ))
 
 (define contract-expt
-  (rule-simplifier
-   (list
-
-    (rule `(* (?? f1) (? x) (? x) (?? f2))
-          `(* ,@f1 (expt x 2) ,@f2))
+  (term-rewriting
+   (rule `(* (?? f1) (? x) (? x) (?? f2))
+         `(* ,@f1 (expt x 2) ,@f2))
     
-    (rule `(expt (expt (? x) (? n)) (? m))
-          `(expt x (* ,n ,m)))
+   (rule `(expt (expt (? x) (? n)) (? m))
+         `(expt x (* ,n ,m)))
 
-    (rule `(* (?? f1) (? x) (expt (? x) (? n)) (?? f2))
-          `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
+   (rule `(* (?? f1) (? x) (expt (? x) (? n)) (?? f2))
+         `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
     
-    (rule `(* (?? f1) (expt (? x) (? n)) (? x) (?? f2))
-          `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
+   (rule `(* (?? f1) (expt (? x) (? n)) (? x) (?? f2))
+         `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
 
-    (rule `(* (?? f1) (expt (? x) (? n)) (expt (? x) (? m)) (?? f2))
-          `(* ,@f1 (expt x (+ ,n ,m)) ,@f2))
-
-    )))
+   (rule `(* (?? f1) (expt (? x) (? n)) (expt (? x) (? m)) (?? f2))
+         `(* ,@f1 (expt x (+ ,n ,m)) ,@f2))
+   ))
 
 ;;;; Logical simplification
 
 
 (define simplify-negations
-  (rule-simplifier
-   (list
-
-    (rule `(not (not (? x))) (succeed x))
-    (rule `(not #t) (succeed #f))
-    (rule `(not #f) (succeed #t))
+  (term-rewriting
+   (rule `(not (not (? x))) (succeed x))
+   (rule `(not #t) (succeed #f))
+   (rule `(not #f) (succeed #t))
     
-    (rule `(not (or (?? terms)))
-          `(and ,@(map (lambda (term)
-                         `(not ,term))
-                       terms)))
-
-    (rule `(not (and (?? terms)))
-          `(or ,@(map (lambda (term)
+   (rule `(not (or (?? terms)))
+         `(and ,@(map (lambda (term)
                         `(not ,term))
                       terms)))
 
-    )))
+   (rule `(not (and (?? terms)))
+         `(or ,@(map (lambda (term)
+                       `(not ,term))
+                     terms)))
+   ))
 
 (define simplify-ors
-  (rule-simplifier
-   (list
+  (term-rewriting
+   (nullary-replacement 'or #f)
+   (unary-elimination 'or)
+   (constant-elimination 'or #f)
+   (constant-promotion 'or #t)
+   (associativity 'or)
+   (commutativity 'or)
+   (idempotence 'or)
 
-    (nullary-replacement 'or #f)
-    (unary-elimination 'or)
-    (constant-elimination 'or #f)
-    (constant-promotion 'or #t)
-    (associativity 'or)
-    (commutativity 'or)
-    (idempotence 'or)
+   (rule `(or (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+         (succeed #t))
 
-    (rule `(or (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
-          (succeed #t))
-
-    (rule `(or (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
-          (succeed #t))
-
-    )))
+   (rule `(or (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
+         (succeed #t))
+   ))
 
 (define simplify-ands
-  (rule-simplifier
-   (list
+  (term-rewriting
+   (nullary-replacement 'and #t)
+   (unary-elimination 'and)
+   (constant-elimination 'and #t)
+   (constant-promotion 'and #f)
+   (associativity 'and)
+   (commutativity 'and)
+   (idempotence 'and)
 
-    (nullary-replacement 'and #t)
-    (unary-elimination 'and)
-    (constant-elimination 'and #t)
-    (constant-promotion 'and #f)
-    (associativity 'and)
-    (commutativity 'and)
-    (idempotence 'and)
+   (rule `(and (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+         (succeed #f))
 
-    (rule `(and (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
-          (succeed #f))
-
-    (rule `(and (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
-          (succeed #f))
-
-    )))
+   (rule `(and (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
+         (succeed #f))
+   ))
 
 (define push-or-through-and
   (rule `(or (?? or-terms-1) (and (?? and-terms)) (?? or-terms-2))
@@ -350,7 +317,7 @@
 (define ->conjunctive-normal-form
   (compose
    (iterated
-    (compose (rule-simplifier (list push-or-through-and))
+    (compose (term-rewriting push-or-through-and)
              simplify-ands
              simplify-ors))
    simplify-negations))

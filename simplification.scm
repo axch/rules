@@ -71,6 +71,9 @@
 (define (rule-simplifier the-rules)
   (iterated-on-subexpressions (rule-list the-rules)))
 
+(define (term-rewriting . rules)
+  (rule-simplifier rules))
+
 (define (top-down the-rule)
   (define (on-expression expression)
     (let ((answer (the-rule expression)))
