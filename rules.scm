@@ -53,9 +53,7 @@
 	  (if (default-object? fail-token)
 	      (set! fail-token data))
 	  (interpret-success
-           (or (combinator data '()
-                (lambda (dict)
-                  (handler dict (lambda (value fail) (make-success value)) (lambda () #f))))
+           (or (combinator data '() handler)
                ;; Otherwise would screw up if the data was a success object
                (make-success fail-token)))))))
 
@@ -68,19 +66,14 @@
 (define (user-handler->system-handler user-handler #!optional default-argl)
   (let ((handler-argl (procedure-argl user-handler default-argl)))
     (system-handler!
-     (lambda (dict succeed fail)
+     (lambda (dict)
        (define (matched-value name)
 	 (dict:value
 	  (or (dict:lookup name dict)
 	      (error "Handler asked for unknown name"
 		     name dict))))
-       (let* ((argument-list (map matched-value handler-argl))
-	      (user-answer (apply user-handler argument-list)))
-	 (cond ((success? user-answer)
-		(succeed (success-value user-answer) fail))
-	       (user-answer
-		(succeed user-answer fail))
-	       (else (fail))))))))
+       (let* ((argument-list (map matched-value handler-argl)))
+         (apply user-handler argument-list))))))
 
 (define-structure success
   value)
