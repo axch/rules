@@ -28,7 +28,7 @@
     (define (succeed value fail) value)
     (define (fail)
       (error "No applicable operations" self arguments))
-    (try-rules arguments (entity-extra self) succeed fail))
+    (try-rules arguments (reverse (entity-extra self)) succeed fail))
   (make-entity operator rules))
 
 (define (pattern-dispatch . rules)

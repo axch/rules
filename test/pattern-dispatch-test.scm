@@ -73,11 +73,11 @@
     (define factorial (make-pattern-operator '()))
 
     (attach-rule! factorial
-		  (make-rule '((? n))
-			     (lambda (n) (* n (factorial (- n 1))))))
+		  (make-rule '(0) (lambda () 1)))
 
     (attach-rule! factorial
-		  (make-rule '(0) (lambda () 1)))
+		  (make-rule '((? n))
+			     (lambda (n) (* n (factorial (- n 1))))))
 
     (factorial 10)
     (produces 3628800)))
