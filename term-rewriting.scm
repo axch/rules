@@ -23,7 +23,7 @@
     (if (null? rules)
 	data
 	(let ((answer ((car rules) data)))
-	  (if (eq? data answer)
+	  (if (eqv? data answer)
 	      (per-rule (cdr rules))
 	      answer)))))
 
@@ -31,14 +31,14 @@
   (lambda (data)
     (let loop ((data data)
 	       (answer (the-rule data)))
-      (if (eq? answer data)
+      (if (eqv? answer data)
 	  answer
 	  (loop answer (the-rule answer))))))
 
 (define (try-subexpressions the-rule expression)
   (if (list? expression)
       (let ((subexpressions-tried (map the-rule expression)))
-        (if (every eq? expression subexpressions-tried)
+        (if (every eqv? expression subexpressions-tried)
             expression
             subexpressions-tried))
       expression))
@@ -54,7 +54,7 @@
   (define (on-expression expression)
     (let ((subexpressions-done (try-subexpressions on-expression expression)))
       (let ((answer (the-rule subexpressions-done)))
-	(if (eq? answer subexpressions-done)
+	(if (eqv? answer subexpressions-done)
 	    answer
 	    (on-expression answer)))))
   on-expression)
@@ -77,11 +77,11 @@
 (define (top-down the-rule)
   (define (on-expression expression)
     (let ((answer (the-rule expression)))
-      (if (eq? answer expression)
+      (if (eqv? answer expression)
           (let ((subexpressions-done
                  (try-subexpressions on-expression expression)))
             (let ((answer (the-rule subexpressions-done)))
-              (if (eq? answer subexpressions-done)
+              (if (eqv? answer subexpressions-done)
                   answer
                   (on-expression answer))))
           (on-expression answer))))
