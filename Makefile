@@ -19,7 +19,7 @@
 test:
 	mit-scheme --compiler -heap 6000 --batch-mode --no-init-file --eval '(set! load/suppress-loading-message? #t)' --eval '(begin (load "load") (load "test/load") (run-tests-and-exit))'
 
-FILES = matcher.scm pattern-directed-invocation.scm simplification.scm simplifiers.scm load.scm
+FILES = patterns.scm rules.scm pattern-dispatch.scm term-rewriting.scm simplifiers.scm load.scm
 
 # TODO Strip the license statements from the code files?
 workbook.ps: $(FILES)
