@@ -204,10 +204,10 @@ following rules:
 Rules
 =====
 
-A rule is a pairing of a pattern and an expression (the _body_) to
-evaluate if the pattern matches.  The useful thing about rules is that
-the expression has access to the bindings of the variables matched by
-the pattern.
+A rule is a pairing of a pattern and an expression to evaluate if the
+pattern matches (the _body_).  The useful thing about rules is that
+the body expression has access to the bindings of the variables
+matched by the pattern.
 
 - `(rule <pattern> <expression>)`: Rule macro
 
@@ -218,8 +218,8 @@ the pattern.
   returns the original input unchanged.
 
 In order to support conditions on the applicability of rules that are
-inconvenient to capture in the pattern, the expression may return `#f`
-to force the rule application to backtrack back into the matcher (or
+inconvenient to capture in the pattern, the body may return `#f` to
+force the rule application to backtrack back into the matcher (or
 fail).
 
 - `(rule <pattern> <expression>)`: Rule macro (cont'd)
@@ -246,9 +246,9 @@ the body of a rule to cause the rule procedure to return `#f`.
   is `#f`, which the rule procedure would otherwise interpret as a
   command to try a different match).
 
-Also, while for purposes of term rewriting, a "rule firing" that
-didn't change the input is equivalent to the rule not having fired at
-all, in other circumstances it is sometimes necessary to distinguish
+For purposes of term rewriting, a "rule firing" that didn't change the
+input is equivalent to the rule not having fired at all.  In other
+circumstances, however, it is sometimes necessary to distinguish
 between a rule matching and intentionally returning its input vs a
 rule not matching at all.  For this purpose, rule procedures actually
 accept an optional second argument, which, if supplied, acts as a
