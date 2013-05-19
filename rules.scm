@@ -59,9 +59,9 @@
 
 ;;; The user-handler is expected to be a procedure that binds the
 ;;; variables that appear in the match and uses them somehow.  This
-;;; converts it into a combinator that accepts the match dictionary,
-;;; and success and failure continuations.  Does not deal with
-;;; optional and rest arguments in the handler.
+;;; converts it into a success procedure that accepts the match
+;;; dictionary.  Does not deal with optional and rest arguments in the
+;;; handler.
 
 (define (user-handler->system-handler user-handler #!optional default-argl)
   (let ((handler-argl (procedure-argl user-handler default-argl)))
@@ -72,7 +72,7 @@
 	  (or (dict:lookup name dict)
 	      (error "Handler asked for unknown name"
 		     name dict))))
-       (let* ((argument-list (map matched-value handler-argl)))
+       (let ((argument-list (map matched-value handler-argl)))
          (apply user-handler argument-list))))))
 
 (define-structure success
