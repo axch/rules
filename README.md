@@ -300,6 +300,12 @@ input is significant.
 Term Rewriting
 ==============
 
+Something like a peephole optimizer or a symbolic simplifier applies
+its rules to any sub-element of its input, replacing that part with
+the result of the rule; and keeps doing so until no rules apply
+anywhere within the input.  Such a thing is called a _term-rewriting
+system_.
+
 Extension
 =========
 

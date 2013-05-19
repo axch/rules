@@ -22,7 +22,7 @@
  (define-test (quad-test)
    (interaction
     (define quad
-      (make-pattern-operator
+      (pattern-dispatch
        (rule 
         `((? a) (? b) (? c) (? x))
         (+ (* a (expt x 2))
@@ -44,7 +44,7 @@
  (define-test (frob-test)
    (interaction
     (define frob
-      (make-pattern-operator))
+      (pattern-dispatch))
 
     (attach-rule! frob
      (rule
@@ -57,7 +57,7 @@
 
  (define-test (factorial-1)
    (interaction
-    (define factorial (make-pattern-operator))
+    (define factorial (make-pattern-operator '()))
 
     (attach-rule! factorial (rule '(0) 1))
 
@@ -70,7 +70,7 @@
  
  (define-test (factorial-2)
    (interaction
-    (define factorial (make-pattern-operator))
+    (define factorial (make-pattern-operator '()))
 
     (attach-rule! factorial
 		  (make-rule '((? n))

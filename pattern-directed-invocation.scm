@@ -64,15 +64,16 @@
 ;;; The operator tries the rules in order until the first matches, and
 ;;; returns the value given by that one; if none match, it errors out.
 
-(define (make-pattern-operator #!rest rules)
+(define (make-pattern-operator rules)
   (define (operator self . arguments)
     (define (succeed value fail) value)
     (define (fail)
       (error "No applicable operations" self arguments))
     (try-rules arguments (entity-extra self) succeed fail))
-  (make-entity operator (if (default-object? rules) '() rules)))
+  (make-entity operator rules))
 
-(define pattern-dispatch make-pattern-operator)
+(define (pattern-dispatch . rules)
+  (make-pattern-operator rules))
 
 (define (try-rules data rules succeed fail)
   (let ((token (list 'fail)))
