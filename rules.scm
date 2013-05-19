@@ -41,8 +41,9 @@
 ;;; optional second argument to use as a token to indicate failure.
 ;;; If the second argument is given, it is returned on failure, and
 ;;; the input datum (along with all other objects) indicates success.
-;;; The token is not stored and is not passed to handlers.  It is up
-;;; to the caller to make sure that this token is unique.
+;;; The token is not stored across invocations and is not passed to
+;;; handlers.  It is up to the caller to make sure that this token is
+;;; unique.
 
 (define (make-rule pattern handler)
   (if (accepts-variables? handler)
@@ -54,7 +55,7 @@
 	      (set! fail-token data))
 	  (interpret-success
            (or (combinator data '() handler)
-               ;; Otherwise would screw up if the data was a success object
+               ;; Not fail-token because it might be a success object
                (make-success fail-token)))))))
 
 ;;; F is expected to be a procedure that binds the variables that
