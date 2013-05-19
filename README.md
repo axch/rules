@@ -261,6 +261,19 @@ token to return on failing to match (instead of the input).
   on failure to match the pattern (or on exhaustion of backtracking
   options).
 
+Where there is a macro, there should generally be a procedure that
+does the same thing:
+
+- `(make-rule <pattern> <procedure>)`: Rule constructor
+
+  Returns a rule procedure that matches its input against the
+  `pattern` and calls the `procedure` with the resulting bindings as
+  follows: every required formal parameter to the `procedure` is
+  passed the binding of the pattern variable of the same name from the
+  match.  The `procedure` is otherwise treated the same way as the
+  body expression of a rule made by the `rule` macro is treated:
+  backtracking on `#f`, forcing return with `succeed`, etc.
+
 
 Pattern Dispatch
 ================
