@@ -40,7 +40,7 @@
 			 (* y (+ 1 2 -3) z))))
    (equal?
    '(/ (* r1 r2) (+ r1 r2))
-   ((compose simplify-quotient ->quotient-of-sums)
+   ((in-order ->quotient-of-sums simplify-quotient)
     '(/ 1 (+ (/ 1 r1) (/ 1 r2))))))
 
  (define associate-addition

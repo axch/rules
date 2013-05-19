@@ -126,13 +126,3 @@
      (,number?  . ,<)
      (,symbol?  . ,symbol<?)
      (,list?    . ,list<?))))
-
-(define compose
-  (if (lexical-unbound? (the-environment) 'compose)
-      (lambda fs
-	(lambda (arg)
-	  (let loop ((fs fs))
-	    (if (null? fs)
-		arg
-		((car fs) (loop (cdr fs)))))))
-      compose))
