@@ -194,7 +194,7 @@ following rules:
   A Scheme procedure that appears as a pattern is taken to be a
   matcher combinator (see [Extension](#extension)).  In particular, to
   match the literal list `(? x)` (which, if used as a pattern, would
-  become a variable), you can use `\`(,(match:eqv '?) x)`.
+  become a variable), you can use ``(,(match:eqv '?) x)`.
 
 - `<object>`: Constant
 
