@@ -283,9 +283,10 @@ A _pattern-dispatch operator_ (like the `factorial` example in the
 is expected to match any datum that the operator may be given.  The
 operator will attempt the rules in some unspecified order, and return
 the result if any rule matches (which result is unspecified if more
-than one rule matches).  This is a case where the distinction between
-a rule not matching and a rule matching and returning its input is
-significant.
+than one rule matches).  If no rule matches, a pattern-dispatch
+operator signals an error.  This is a case where the distinction
+between a rule not matching and a rule matching and returning its
+input is significant.
 
 - `(pattern-dispatch <rule> ...)`
 
