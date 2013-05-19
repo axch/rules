@@ -6,12 +6,12 @@
 ;;; under the terms of the GNU Affero General Public License as
 ;;; published by the Free Software Foundation; either version 3 of the
 ;;; License, or (at your option) any later version.
-;;; 
+;;;
 ;;; This code is distributed in the hope that it will be useful,
 ;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;; GNU General Public License for more details.
-;;; 
+;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Rules; if not, see
 ;;; <http://www.gnu.org/licenses/>.
@@ -245,30 +245,39 @@
 		     (list (last-list-submatcher (car (last-pair pattern))))))))
 
 (defhandler match:->combinators list-pattern->combinators match:list?)
-
+
 (define (matcher pattern)
-  (let ((match-combinator (match:->combinators pattern)))
-    (lambda (datum)
-      (match-combinator datum '()
-       (lambda (dictionary) dictionary)))))
+  (first-dictionary (match:->combinators pattern)))
 
 (define (first-dictionary matcher)
   (lambda (datum)
-    (matcher datum '() 
-	     (lambda (dict)
-	       (interpret-segments-in-dictionary dict)))))
+    (matcher
+     datum '()
+     (lambda (dict)
+       (interpret-segments-in-dictionary dict)))))
+
+(define (for-each-matcher pattern)
+  (for-each-dictionary (match:->combinators pattern)))
+
+(define (for-each-dictionary matcher)
+  (lambda (datum f)
+    (matcher
+     datum '()
+     (lambda (dict)
+       (f (interpret-segments-in-dictionary dict))
+       #f))))
+
+(define (all-results-matcher pattern)
+  (all-dictionaries (match:->combinators pattern)))
 
 (define (all-dictionaries matcher)
   (lambda (datum)
     (let ((results '()))
-      (matcher
+      ((for-each-dictionary matcher)
        datum
-       '()
        (lambda (dict)
-	 (set! results (cons dict results))
-	 #f))
-      (map interpret-segments-in-dictionary
-	   (reverse results)))))
+	 (set! results (cons dict results))))
+      (reverse results))))
 
 #|
  ((match:->combinators '(a ((? b) 2 3) 1 c))
