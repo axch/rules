@@ -23,18 +23,17 @@
    (interaction
     (define quad
       (make-pattern-operator
-       (list
-	(rule 
-	 `((? a) (? b) (? c) (? x))
-	 (+ (* a (expt x 2))
-	    (* b x)
-	    c))
+       (rule 
+        `((? a) (? b) (? c) (? x))
+        (+ (* a (expt x 2))
+           (* b x)
+           c))
 
-	(rule
-	 `((? a) (? x) (? x) + (? b) (? x) + (? c))
-	 (+ (* a (expt x 2))
-	    (* b x)
-	    c)))))
+       (rule
+        `((? a) (? x) (? x) + (? b) (? x) + (? c))
+        (+ (* a (expt x 2))
+           (* b x)
+           c))))
 
     (quad 1 2 3 4)
     (produces 27)

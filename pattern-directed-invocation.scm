@@ -64,7 +64,7 @@
 ;;; The operator tries the rules in order until the first matches, and
 ;;; returns the value given by that one; if none match, it errors out.
 
-(define (make-pattern-operator #!optional rules)
+(define (make-pattern-operator #!rest rules)
   (define (operator self . arguments)
     (define (succeed value fail) value)
     (define (fail)
