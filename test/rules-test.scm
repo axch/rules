@@ -16,22 +16,13 @@
 ;;; License along with Rules; if not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define (self-relatively thunk)
-  (if (current-eval-unit #f)
-      (with-working-directory-pathname
-       (directory-namestring (current-load-pathname))
-       thunk)
-      (thunk)))
+(in-test-group
+ rules
 
-(define (load-relative filename)
-  (self-relatively (lambda () (load filename))))
-
-(define (assert-same-dictionary-lists expected got)
-  (assert-equal (length expected) (length got))
-  (assert-true (every dict:equal? expected got)))
-
-(load-relative "../testing/load")
-(load-relative "patterns-test")
-(load-relative "rules-test")
-(load-relative "pattern-dispatch-test")
-(load-relative "simplification-test")
+ (let ((the-rule (rule '(foo (? x)) (succeed x))))
+   (define-each-check
+     (= 1 (the-rule '(foo 1)))
+     (success? (the-rule `(foo ,(make-success 2))))
+     (= 3 (success-value (the-rule `(foo ,(make-success 3)))))
+     (success? (the-rule (make-success 4))) ; Should return the input, not 4
+     )))
