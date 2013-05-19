@@ -393,7 +393,7 @@ pattern and return their input on failure, so these combinators nest.
 Iteration patterns are hard to describe in words.  If you are still
 confused about the rule application order of `on-subexpressions`,
 `iterated-on-subexpressions`, or `top-down`, they are defined quite
-concisely in `simplification.scm`.
+concisely in `term-rewriting.scm`.
 
 Extension
 =========
@@ -406,11 +406,11 @@ therein.
 
 - Interesting stuff
 
-  - `matcher.scm`: Pattern matcher in the combinator style, and a
+  - `patterns.scm`: Pattern matcher in the combinator style, and a
     compiler for it.
-  - `pattern-directed-invocation.scm`: Rules, and composition thereof
+  - `rules.scm`: Rules, and composition thereof
     into pattern-dispatch operators.
-  - `simplification.scm`: Definition of a term rewriting engine and a
+  - `term-rewriting.scm`: Definition of a term rewriting engine and a
     few useful variations on the theme.
   - `simplifiers.scm`: Simplification of algebraic and logical
     expressions by means of term rewriting.

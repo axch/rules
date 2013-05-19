@@ -25,4 +25,7 @@ FILES = matcher.scm pattern-directed-invocation.scm simplification.scm simplifie
 workbook.ps: $(FILES)
 	enscript -M letter -fCourier-Bold12 -o workbook.ps --file-align=2 README  --color --highlight $(FILES)
 
-.PHONY: test
+clean:
+	rm *.bin *.bci *.com *.ext
+
+.PHONY: test clean

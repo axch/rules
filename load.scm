@@ -33,10 +33,10 @@
 (load-relative-compiled "support/eq-properties")
 (if (lexical-unbound? (the-environment) 'make-generic-operator)
     (load-relative-compiled "support/ghelper"))
-(load-relative-compiled "matcher")
+(load-relative-compiled "patterns")
 
 (define (rule-memoize f) f)
 
-(load-relative-compiled "pattern-directed-invocation")
-(load-relative-compiled "simplification")
+(load-relative-compiled "rules")
+(load-relative-compiled "term-rewriting")
 (load-relative-compiled "simplifiers")
