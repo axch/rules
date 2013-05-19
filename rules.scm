@@ -48,16 +48,16 @@
   (if (user-handler? handler)
       (make-rule pattern (user-handler->system-handler
 			  handler (match:pattern-names pattern)))
-      (let ((pattern-combinator (->combinators pattern)))
+      (let ((combinator (match:->combinators pattern)))
 	(lambda (data #!optional fail-token)
 	  (if (default-object? fail-token)
 	      (set! fail-token data))
 	  (interpret-success
-	   (pattern-combinator data
-	    (lambda (dict fail)
-	      (handler dict (lambda (value fail) (make-success value)) fail))
-            ;; Otherwise would screw up if the data was a success object
-	    (lambda () (make-success fail-token))))))))
+           (or (combinator data '()
+                (lambda (dict)
+                  (handler dict (lambda (value fail) (make-success value)) (lambda () #f))))
+               ;; Otherwise would screw up if the data was a success object
+               (make-success fail-token)))))))
 
 ;;; The user-handler is expected to be a procedure that binds the
 ;;; variables that appear in the match and uses them somehow.  This
@@ -101,15 +101,6 @@
 (define (system-handler! thing)
   (eq-put! thing 'system-handler #t)
   thing)
-
-(define (->combinators pattern)
-  (let ((class-combinator
-	 (match:->combinators pattern)))
-    (lambda (data succeed fail)
-      (or (class-combinator data '()
-	   (lambda (value)
-	     (succeed value (lambda () #f))))
-	  (fail)))))
 
 ;;; The RULE macro is convenient syntax for writing rules.  A rule is
 ;;; written as a quoted pattern and an expression.  If the pattern
