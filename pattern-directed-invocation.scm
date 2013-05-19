@@ -72,6 +72,8 @@
     (try-rules arguments (entity-extra self) succeed fail))
   (make-entity operator (if (default-object? rules) '() rules)))
 
+(define pattern-dispatch make-pattern-operator)
+
 (define (try-rules data rules succeed fail)
   (let ((token (list 'fail)))
     (let per-rule ((rules rules))
