@@ -49,6 +49,6 @@
   (assert-true (every dict:equal? expected got)))
 
 (load-relative "../testing/load")
-(load-relative "matcher-test")
-(load-relative "pattern-directed-invocation-test")
+(load-relative "patterns-test")
+(load-relative "pattern-dispatch-test")
 (load-relative "simplification-test")

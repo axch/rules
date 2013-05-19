@@ -17,7 +17,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (in-test-group
- matcher
+ patterns
 
  (define (id x) x)
 

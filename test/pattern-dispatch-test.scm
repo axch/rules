@@ -17,7 +17,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (in-test-group
- pattern-directed-invocation
+ pattern-dispatch
  
  (define-test (quad-test)
    (interaction
