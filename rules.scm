@@ -45,8 +45,8 @@
 ;;; to the caller to make sure that this token is unique.
 
 (define (make-rule pattern handler)
-  (if (user-handler? handler)
-      (make-rule pattern (user-handler->system-handler
+  (if (accepts-variables? handler)
+      (make-rule pattern (accept-dictionary
 			  handler (match:pattern-names pattern)))
       (let ((combinator (match:->combinators pattern)))
 	(lambda (data #!optional fail-token)
@@ -57,23 +57,22 @@
                ;; Otherwise would screw up if the data was a success object
                (make-success fail-token)))))))
 
-;;; The user-handler is expected to be a procedure that binds the
-;;; variables that appear in the match and uses them somehow.  This
-;;; converts it into a success procedure that accepts the match
-;;; dictionary.  Does not deal with optional and rest arguments in the
-;;; handler.
+;;; F is expected to be a procedure that binds the variables that
+;;; appear in the match and uses them somehow.  This converts it into
+;;; a success procedure that accepts the match dictionary.  Does not
+;;; deal with optional and rest arguments to f.
 
-(define (user-handler->system-handler user-handler #!optional default-argl)
-  (let ((handler-argl (procedure-argl user-handler default-argl)))
-    (system-handler!
+(define (accept-dictionary f #!optional default-argl)
+  (let ((argl (procedure-argl f default-argl)))
+    (accepts-dictionary!
      (lambda (dict)
        (define (matched-value name)
 	 (dict:value
 	  (or (dict:lookup name dict)
 	      (error "Handler asked for unknown name"
 		     name dict))))
-       (let ((argument-list (map matched-value handler-argl)))
-         (apply user-handler argument-list))))))
+       (let ((argument-list (map matched-value argl)))
+         (apply f argument-list))))))
 
 (define-structure success
   value)
@@ -85,14 +84,14 @@
       (success-value thing)
       thing))
 
-(define (user-handler? thing)
-  (not (system-handler? thing)))
+(define (accepts-variables? thing)
+  (not (accepts-dictionary? thing)))
 
-(define (system-handler? thing)
-  (eq-get thing 'system-handler))
+(define (accepts-dictionary? thing)
+  (eq-get thing 'accepts-dictionary))
 
-(define (system-handler! thing)
-  (eq-put! thing 'system-handler #t)
+(define (accepts-dictionary! thing)
+  (eq-put! thing 'accepts-dictionary #t)
   thing)
 
 ;;; The RULE macro is convenient syntax for writing rules.  A rule is
