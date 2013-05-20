@@ -440,14 +440,17 @@ Typically, the allowable patterns are less general, allowing the
 matching to be implemented more efficiently, at the cost of
 expressiveness.  Also typically, the patterns are embedded in some
 larger control construct, without allowing standalone matchers or
-rules to have an existence of their own.
+rules to have an existence of their own.  This obscures the essential
+semantic similarity of pattern dispatch with term rewriting; but may
+be appropriate in order to permit deep inspection of the patterns for
+high matching performance.
 
 The examples I have in mind are
 
 - In Haskell, Scala, and presumably other members of the ML family,
-  pattern matching is embedded into structure of the language,
+  pattern matching is embedded into the structure of the language,
   essentially such that every function is a pattern-dispatch operator
-  (except that further rules cannot be added after the fact).
+  (except that further rules cannot be added to a defined operator after the fact).
   Patterns and rules do not have an independent existence, except
   insofar as a pattern-dispatch operator with exactly one rule can be
   thought of as being the same as a rule (which is not quite right,
@@ -484,6 +487,10 @@ The examples I have in mind are
   only as clauses of variants of the `match` form and have no
   independent existence, so effectively can only be used in what
   amounts to anonymous, non-extensible pattern-dispatch operators.
+
+- Racket also ships with a term-rewriting library named `redex`.  As
+  far as I can tell, the clauses of `match` have no relationship to
+  the rules used by `redex`.
 
 - My own [`pattern-case`](http://github.com/axch/pattern-case) library
   is an implementation of ML-style pattern matching in MIT Scheme, and
