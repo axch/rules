@@ -1,5 +1,6 @@
-;;; This file is a supporting library for Rules, a pattern matching,
-;;; pattern dispatch, and term rewriting system for MIT Scheme.
+;;; This file is a supporting library for Rules, an extensible pattern
+;;; matching, pattern dispatch, and term rewriting system for MIT
+;;; Scheme.
 ;;; Copyright Gerald Jay Sussman.
 ;;;
 ;;; This program is free software; you can redistribute it and/or

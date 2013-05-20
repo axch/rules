@@ -1,6 +1,6 @@
-;;; This file is part of Rules, a pattern matching, pattern dispatch,
-;;; and term rewriting system for MIT Scheme.
-;;; Copyright 2010 Alexey Radul.
+;;; This file is part of Rules, an extensible pattern matching,
+;;; pattern dispatch, and term rewriting system for MIT Scheme.
+;;; Copyright 2012 Alexey Radul.
 ;;;
 ;;; Rules is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
