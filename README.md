@@ -17,10 +17,10 @@ might be rendered in prefix notation as
 ```scheme
 (define factorial
   (pattern-dispatch
-    (rule 0
-          1)
-    (rule `(? n ,positive?)
-          (* n (factorial (- n 1))))))
+    (rule '(0)                          ; If the whole argument list is a single 0
+          1)                            ; the answer is 1
+    (rule `((? n ,positive?))           ; If a single positive n
+          (* n (factorial (- n 1))))))  ; use the formula
 ```
 
 In the case of factorial, this representation doesn't buy us much, but
