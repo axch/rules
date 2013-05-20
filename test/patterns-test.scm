@@ -83,7 +83,7 @@
  (define-test (obvious-tail)
    (define matcher
      (match:->combinators '(and (?? stuff))))
-   (let ((items (iota 10))) ; linear
+   (let ((items (iota 10))) ; constant time, except building the test list
      (assert-equal
       `(((stuff ,items)))
       ((all-dictionaries matcher)
