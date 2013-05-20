@@ -76,6 +76,7 @@ In addition, Rules
 - is itself meant as a pedagogical illustration of a way to write such
   engines.
 
+
 Installation
 ============
 
@@ -88,6 +89,7 @@ and hack away.
 If you want to develop Rules, you will want to also get the unit test
 framework that Rules uses.  Type `git submodule init` and `git
 submodule update`.
+
 
 Patterns
 ========
@@ -229,6 +231,7 @@ the datum match the pattern.
   empty) list of all association lists of bindings of variable names
   to pieces of the object that make the pattern match.
 
+
 Rules
 =====
 
@@ -324,6 +327,7 @@ significant.
 
   Adds another rule to an existing pattern-dispatch operator.  The
   new rule will be tried last.
+
 
 Term Rewriting
 ==============
@@ -426,6 +430,69 @@ concisely in `term-rewriting.scm`.
 Extension
 =========
 
+
+Other Pattern Matching Systems
+==============================
+
+In general programming language discourse, the term "pattern matching"
+usually means something a little different from what's going on here.
+Typically, the allowable patterns are less general, allowing the
+matching to be implemented more efficiently, at the cost of
+expressiveness.  Also typically, the patterns are embedded in some
+larger control construct, without allowing standalone matchers or
+rules to have an existence of their own.
+
+The examples I have in mind are
+
+- In Haskell, Scala, and presumably other members of the ML family,
+  pattern matching is embedded into structure of the language,
+  essentially such that every function is a pattern-dispatch operator
+  (except that further rules cannot be added after the fact).
+  Patterns and rules do not have an independent existence, except
+  insofar as a pattern-dispatch operator with exactly one rule can be
+  thought of as being the same as a rule (which is not quite right,
+  because they do not treat match failures gracefully).
+
+  The pattern matching in these languages is restricted relative to
+  Rules in that all pattern variables must be distinct (obviating the
+  need to check repeated ones for equality), there are no segment
+  variables, and there is no notion of backtracking in the matcher
+  (though there is an option for "rule bodies" to reject a match, in
+  the form of guard clauses).  On the other hand, user-defined product
+  types are automatically added as additional patterns, giving smooth
+  integration between construction and destructuring of algebraic data
+  types.
+
+  User extensibility of the pattern system (aside from the automatic
+  introduction of products) is given by view patterns in Haskell (and
+  presumably similar constructs in other descendants of ML) and by
+  extractor classes in Scala.
+
+- Prolog deeply integrates the notion of unification, which is like
+  pattern matching except that the "data" can be a pattern also --
+  unification computes the most general common specializer of two
+  patterns.  If one of the inputs to the unification algorithm happens
+  to have no variables in it, unification amounts to pattern matching.
+  I do not actually know the relative expressiveness of the patterns
+  in Prolog vs Rules.  Prolog already has pervasive backtracking, so
+  it is quite possible that the patterns admit multiple unifications,
+  which may need to be searched.
+
+- Racket's `match` facility is very similar to the pattern matching in
+  Rules, though instead of segment variables they have a concept of
+  repeating subpatterns of lists.  Again, patterns and rules appear
+  only as clauses of variants of the `match` form and have no
+  independent existence, so effectively can only be used in what
+  amounts to anonymous, non-extensible pattern-dispatch operators.
+
+- My own [`pattern-case`](http://github.com/axch/pattern-case) library
+  is an implementation of ML-style pattern matching in MIT Scheme, and
+  the same remarks about its relative expressiveness to Rules apply.
+  The fact that I wrote two of these things tells you that I think
+  there is room for different renditions of pattern matching in the
+  same programming environment.
+
+
 Developer Documentation
 =======================
 
@@ -484,6 +551,7 @@ implement `rule` (notably a macro system permitting controlled
 non-hygiene).  I expect Rules to run unmodified on any platform MIT
 Scheme supports.
 
+
 Bugs
 ====
 
@@ -492,7 +560,8 @@ combinators](#term-rewriting) do not obey exactly the same interface
 as rules, in that they do not accept the optional argument that allows
 the user of a rule to tell the difference between the rule failing to
 match and matching but returning identically the input.  This could be
-viewed as a bug.x
+viewed as a bug.
+
 
 Unimplemented Features
 ======================
@@ -603,6 +672,7 @@ After a couple iterations between 2008 and 2010, I was able to produce
 a reasonably pretty version of this program, showcasing the
 relationships between patterns, rules, pattern dispatch, term
 rewriting, and simplification.
+
 
 License
 =======
