@@ -21,9 +21,8 @@ test:
 
 FILES = patterns.scm rules.scm pattern-dispatch.scm term-rewriting.scm simplifiers.scm load.scm
 
-# TODO Strip the license statements from the code files?
 workbook.ps: $(FILES)
-	enscript -M letter -fCourier-Bold12 -o workbook.ps --file-align=2 README  --color --highlight $(FILES)
+	enscript -M letter -fCourier-Bold12 -o workbook.ps --file-align=2 --color --highlight $(FILES)
 
 clean:
 	rm *.bin *.bci *.com *.ext

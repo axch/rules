@@ -1,6 +1,7 @@
-;;; This file is part of Rules, a pattern matching, pattern dispatch,
-;;; and term rewriting system for MIT Scheme.
-;;; Copyright 2010 Alexey Radul.
+;;; This file is part of Rules, an extensible pattern matching,
+;;; pattern dispatch, and term rewriting system for MIT Scheme.
+;;; Copyright 2010-2013 Alexey Radul, Massachusetts Institute of
+;;; Technology
 ;;;
 ;;; Rules is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -16,10 +17,10 @@
 ;;; License along with Rules; if not, see
 ;;; <http://www.gnu.org/licenses/>.
 
+(declare (usual-integrations))
+
 ;;;; Matcher based on match combinators, CPH/GJS style.
 ;;;     Idea is in Hewitt's PhD thesis (1969).
-
-(declare (usual-integrations))
 
 ;;; There are match procedures that can be applied to data items.  A
 ;;; match procedure either accepts or rejects the data it is applied
