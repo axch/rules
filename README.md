@@ -574,6 +574,36 @@ Author
 
 Alexey Radul, <axch@mit.edu>
 
+
+History
+=======
+
+The idea of compiling patterns to collections of combinator procedures
+goes at least as far back as Carl Hewitt's 1969 PhD thesis, though he
+did not implement it.
+
+The progenitor of the current program was originally written by Gerald
+Jay Sussman in 1983 -- an appropriate source file had this to say:
+
+> This is a descendent of the infamous 6.001 rule interpreter,
+> originally written by GJS for a lecture in the faculty course held
+> at MIT in the summer of 1983, and subsequently used and tweaked from
+> time to time.  This subsystem has been a serious pain in the ass,
+> because of its expressive limitations, but I have not had the guts
+> to seriously improve it since its first appearance. -- GJS
+>
+> January 2006.  I have the guts now! The new matcher is based on
+> combinators and is in matcher.scm.  -- GJS
+
+I myself got involved when I was a teaching assistant for Professor
+Sussman's Advanced Symbolic Programming course at MIT; my inspiration
+was to clean up all the internal and external interfaces, and
+understand what the essential pieces were and what they were good for.
+After a couple iterations between 2008 and 2010, I was able to produce
+a reasonably pretty version of this program, showcasing the
+relationships between patterns, rules, pattern dispatch, term
+rewriting, and simplification.
+
 License
 =======
 
