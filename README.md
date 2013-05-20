@@ -616,7 +616,7 @@ of any new matchers and any restriction predicates to each other).
 Performance
 -----------
 
-Some attention has been given to making sure that at
+Though some attention has been given to making sure that at
 least common rules will have the asymptotic performace one would wish,
 further performance improvements are possible:
 
@@ -625,6 +625,12 @@ further performance improvements are possible:
   how many elements of the list to match it with.  At the moment this
   optimization is only applied in the common case that the segment
   variable in question is the last subpattern in the list.
+
+- If a segment variable is not used a the rule's body, much work could
+  be saved by not copying it before evaluating said body.  This would
+  be very easy to implement in a lazy programming language, but in
+  Scheme it would require a static dead-variable analysis of the body
+  expression.
 
 - In principle, `rule-list` and `pattern-dispatch` could eliminate the
   work of matching common prefixes of multiple rules by using a trie
