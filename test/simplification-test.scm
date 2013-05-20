@@ -192,7 +192,8 @@
      (check (equal? len (simplify-sums `(+ ,@(make-list len 1)))))))
 
  (define-test (simplifying-ands)
-   (let* ((len 10) ; TODO quadratic
+   (let* ((len 10) ; TODO quadratic, presumably because of checking
+                   ; for (and ... (? a) ... (not (? a)) ...)
 	  (items `(and ,@(iota len) ,@(make-list len 'foo))))
      (check
       (equal?
