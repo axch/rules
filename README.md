@@ -466,7 +466,7 @@ a pattern constant:
 (define (constant-matcher pattern-constant)
   (lambda (data dictionary succeed)
     (and (eqv? data pattern-constant)
-	 (succeed dictionary))))
+         (succeed dictionary))))
 ```
 
 The returned procedure closes over the constant it is looking for.
@@ -476,9 +476,38 @@ nothing the subsequent matchers can do about this datum being
 different from the desired constant).  If the data is `eqv?` to the
 constant, this matcher defers completely to the sequel.
 
-Direct embedding of custom matchers
-Syntax extension
-Interface of segment matchers
+Any procedure that implements the interface of a matcher combinator
+can be used directly in a pattern. For example (note the quasiquote)
+
+```scheme
+`(,(constant-matcher '+) (? x) (? y))  ; matches like '(+ (? x) (? y))
+```
+
+This fact is useful even without custom matcher combinators, to
+abstract over patterns (see, for example, `simplifiers.scm`).
+
+The pattern compiler (that builds matcher combinators out of patterns)
+can also be extended, to recognize additional syntax for custom
+combinators:
+
+- `(new-pattern-syntax! <predicate> <procedure>)`
+
+  Adds a clause to the pattern compiler.  The clause is applicable to
+  any piece of syntax for which the given `predicate` returns a true
+  value; if so, that piece of syntax is compiled to the combinator
+  returned from invoking `procedure`, passing that syntax as its only
+  argument.  Note that if the `predicate` matches syntax intended to
+  be compound, it is up to the `procedure` to compile its parts into
+  submatcher combinators and compose them appropriately.  See
+  `list-pattern->combinators` in `patterns.scm` for an example.
+
+- `(match:->combinators <pattern>)`
+
+  Compiles the given pattern to a matcher combinator, respecting all
+  syntax definitions given by `new-pattern-syntax` to date.
+
+
+TODO Interface of segment matchers
 
 Other Pattern Matching Systems
 ==============================

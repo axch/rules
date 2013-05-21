@@ -216,6 +216,11 @@
 (define match:->combinators
   (make-generic-operator 1 'match:->combinators match:eqv))
 
+(define (new-pattern-syntax! predicate interpreter)
+  (defhandler match:->combinators
+    interpreter
+    predicate))
+
 (defhandler match:->combinators
   (lambda (pattern) pattern)
   procedure?)
