@@ -442,14 +442,15 @@ are called _combinators_.
 To be precise, a matcher combinator in Rules is a procedure of three
 arguments: the `datum`, the `dictionary`, and the `success`
 continuation procedure.  The `datum` is the portion of the data that
-it is expected to match against, the `dictionary` is a data structure
+the combinator is expected to match against, the `dictionary` is a data structure
 that represents the bindings made so far, and the `success` procedure
-represents the behavior of the rest of matcher after this combinator.
+represents the behavior of the rest of the matcher after this combinator.
 To wit, the `success` procedure accepts a dictionary (possibly
 augmented with any additional bindings this combinator chooses to
 make) and returns either `#f` to indicate that the rest of the matcher
-fails to match with those bindings, or a (possibly still different)
-dictionary to indicate success.
+fails to match with those bindings, or a dictionary to indicate success
+(which should include bindings for all pattern variables occurring
+in the whole pattern).
 
 The matcher combinator is expected to return `#f` if the matcher
 consisting of itself and its success procedure fails to match the
@@ -457,7 +458,8 @@ given datum with the given dictionary, and a dictionary of bindings if
 it succeeds.  (Matchers for data segments have a slightly different
 interface, [below](#...).)  Giving a combinator access to the rest of
 the matcher like this enables guessing different possible bindings and
-intercepting failures in order to backtrack (see TODO).
+intercepting failures in order to backtrack (see `match:segment` in
+`patterns.scm`).
 
 For example, here is one way to make a matcher combinator for matching
 a pattern constant:
@@ -474,7 +476,9 @@ When it gets data, it checks that the data is `eqv?` to the constant.
 If not, the whole match from this point fails (because there is
 nothing the subsequent matchers can do about this datum being
 different from the desired constant).  If the data is `eqv?` to the
-constant, this matcher defers completely to the sequel.
+constant, this combinator defers completely to the sequel.
+
+TODO dictionary API
 
 Any procedure that implements the interface of a matcher combinator
 can be used directly in a pattern. For example (note the quasiquote)
@@ -505,7 +509,6 @@ combinators:
 
   Compiles the given pattern to a matcher combinator, respecting all
   syntax definitions given by `new-pattern-syntax` to date.
-
 
 TODO Interface of segment matchers
 
