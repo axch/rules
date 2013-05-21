@@ -439,6 +439,9 @@ matcher for a compound (like a list) to combine matchers for the
 pieces as black boxes and expose the same interface.  That's why they
 are called _combinators_.
 
+Implementing Custom Matcher Combinators
+---------------------------------------
+
 To be precise, a matcher combinator in Rules is a procedure of three
 arguments: the `datum`, the `dictionary`, and the `success`
 continuation procedure.  The `datum` is the portion of the data that
@@ -456,7 +459,7 @@ The matcher combinator is expected to return `#f` if the matcher
 consisting of itself and its success procedure fails to match the
 given datum with the given dictionary, and a dictionary of bindings if
 it succeeds.  (Matchers for data segments have a slightly different
-interface, [below](#...).)  Giving a combinator access to the rest of
+interface, [below](#a-note-on-segment-matching).)  Giving a combinator access to the rest of
 the matcher like this enables guessing different possible bindings and
 intercepting failures in order to backtrack (see `match:segment` in
 `patterns.scm`).
@@ -479,6 +482,9 @@ different from the desired constant).  If the data is `eqv?` to the
 constant, this combinator defers completely to the sequel.
 
 TODO dictionary API
+
+Custom Combinators in Patterns
+------------------------------
 
 Any procedure that implements the interface of a matcher combinator
 can be used directly in a pattern. For example (note the quasiquote)
@@ -509,6 +515,9 @@ combinators:
 
   Compiles the given pattern to a matcher combinator, respecting all
   syntax definitions given by `new-pattern-syntax` to date.
+
+A Note on Segment Matching
+--------------------------
 
 TODO Interface of segment matchers
 
