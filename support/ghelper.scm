@@ -122,6 +122,11 @@
         (operator-record-arity record)
         (error "Not an operator:" operator))))
 
+;;; The way the binding and searching interact is that the handler
+;;; this assigns ends up being highest priority, unless its predicate
+;;; list is a proper prefix of a previously assigned predicate list.
+;;; In that case, the new handler is provably less specific than the
+;;; old one, so does not take priority.
 (define (assign-operation operator handler . argument-predicates)
   (let ((record (get-operator-record operator))
 	(arity (length argument-predicates)))
