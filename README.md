@@ -481,7 +481,26 @@ nothing the subsequent matchers can do about this datum being
 different from the desired constant).  If the data is `eqv?` to the
 constant, this combinator defers completely to the sequel.
 
-TODO dictionary API
+The dictionary is an associative structure for accessing previously
+made bindings and making new ones.
+
+- `(dict:lookup <variable> <dictionary>)`
+
+  Looks up the given `variable` (usually a symbol) in the given
+  `dictionary` and returns the value cell (see `dict:value`) if found
+  or `#f` if not.  Does not directly return the value held in the
+  value cell to be able to distinguish between no binding and a
+  binding to `#f`.
+
+- `(dict:value <value-cell>)`
+
+  Returns the value held in the given value cell.
+
+- `(dict:bind <variable> <object> <dictionary>)`
+
+  Returns the new dictionary that results from adding to the given one
+  a binding for the `variable` to the `object`.  The input
+  `dictionary` is not mutated.
 
 Custom Combinators in Patterns
 ------------------------------
