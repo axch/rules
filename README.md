@@ -430,6 +430,55 @@ concisely in `term-rewriting.scm`.
 Extension
 =========
 
+The pattern matching system of Rules is extensible, permitting the
+addition of custom matcher combinators and custom pattern syntax for
+them.
+
+Pattern matchers in Rules nest because of an interface that allows a
+matcher for a compound (like a list) to combine matchers for the
+pieces as black boxes and expose the same interface.  That's why they
+are called _combinators_.
+
+To be precise, a matcher combinator in Rules is a procedure of three
+arguments: the `datum`, the `dictionary`, and the `success`
+continuation procedure.  The `datum` is the portion of the data that
+it is expected to match against, the `dictionary` is a data structure
+that represents the bindings made so far, and the `success` procedure
+represents the behavior of the rest of matcher after this combinator.
+To wit, the `success` procedure accepts a dictionary (possibly
+augmented with any additional bindings this combinator chooses to
+make) and returns either `#f` to indicate that the rest of the matcher
+fails to match with those bindings, or a (possibly still different)
+dictionary to indicate success.
+
+The matcher combinator is expected to return `#f` if the matcher
+consisting of itself and its success procedure fails to match the
+given datum with the given dictionary, and a dictionary of bindings if
+it succeeds.  (Matchers for data segments have a slightly different
+interface, [below](#...).)  Giving a combinator access to the rest of
+the matcher like this enables guessing different possible bindings and
+intercepting failures in order to backtrack (see TODO).
+
+For example, here is one way to make a matcher combinator for matching
+a pattern constant:
+
+```scheme
+(define (constant-matcher pattern-constant)
+  (lambda (data dictionary succeed)
+    (and (eqv? data pattern-constant)
+	 (succeed dictionary))))
+```
+
+The returned procedure closes over the constant it is looking for.
+When it gets data, it checks that the data is `eqv?` to the constant.
+If not, the whole match from this point fails (because there is
+nothing the subsequent matchers can do about this datum being
+different from the desired constant).  If the data is `eqv?` to the
+constant, this matcher defers completely to the sequel.
+
+Direct embedding of custom matchers
+Syntax extension
+Interface of segment matchers
 
 Other Pattern Matching Systems
 ==============================
