@@ -538,7 +538,31 @@ combinators:
 A Note on Segment Matching
 --------------------------
 
-TODO Interface of segment matchers
+Combinators that match sublists (rather than individual data items)
+necessarily have a somewhat different interface, because the number of
+items that the segment matcher consumes impacts the remaining data
+available for its success continuation to match.
+
+The data that is passed to a segment matcher is always a list, and the
+segment matcher's success continuation accepts a second argument.  The
+segment matcher is to match some prefix of the list, and pass the
+remainder in to its success continuation in addition to the
+(augmented) dictionary.  For an example, see `match:segment` in
+`patterns.scm`.  Note that in order for any enclosing compound
+combinators to be able to distinguish segment matchers from regular
+matchers (in order to pass them the appropriate arguments), the former
+must be marked by invoking the procedure `segment-matcher!` upon them.
+
+- `(make-segment <list> <list>)`
+
+  An abstraction for designating segments of lists without copying
+  them (until needed).  A segment is defined as all the elements of
+  the first argument list, except those in the second, which must be a
+  suffix thereof.  Creating a segment is an O(1) operation.  If a
+  segment is placed in a dictionary (with `dict:bind`) then
+  `dict:value` will retrieve it as a regular list (the requisite
+  copying will be performed at most once).
+
 
 Other Pattern Matching Systems
 ==============================
