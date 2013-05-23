@@ -241,7 +241,7 @@
 
 (new-pattern-syntax! match:segment?
   (lambda (pattern) (match:segment (match:variable-name pattern))))
-
+
 ;; Every other list is a list matcher
 (define (match:list? pattern)
   (and (list? pattern)
@@ -264,6 +264,8 @@
 
 (new-pattern-syntax! match:list? list-pattern->combinators)
 
+;;;; Making toplevel matchers out of patterns
+
 (define (matcher pattern)
   (first-dictionary (match:->combinators pattern)))
 
