@@ -300,8 +300,9 @@
   ((y . (b b b b)) (x . (b)))
   ((y . (b b)) (x . (b b)))
   ((y . ()) (x . (b b b)))) |#
-;;; Nice pattern inspection procedure that will be used by the
-;;; pattern-directed invocation system.
+;;; Pattern inspection procedure that will be used to make rules.
+;;; This does not take into account the possibility of matching
+;;; extensions that introduce new variables.
 
 (define (match:pattern-names pattern)
   (let loop ((pattern pattern) (names '()))
