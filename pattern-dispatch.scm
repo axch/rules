@@ -19,6 +19,8 @@
 
 (declare (usual-integrations))
 
+;;;; Pattern Dispatch
+
 ;;; A pattern directed operator is a collection of rules, one of which
 ;;; is expected to match any datum that the operator may be given.
 ;;; The operator tries the rules in order until the first matches, and
@@ -30,7 +32,7 @@
     (define (fail)
       (error "No applicable operations" self arguments))
     (try-rules arguments (reverse (entity-extra self)) succeed fail))
-  (make-entity operator rules))
+  (make-entity operator (reverse rules)))
 
 (define (pattern-dispatch . rules)
   (make-pattern-operator rules))
