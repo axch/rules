@@ -28,16 +28,15 @@
 
 (define (make-pattern-operator rules)
   (define (operator self . arguments)
-    (define (succeed value fail) value)
     (define (fail)
       (error "No applicable operations" self arguments))
-    (try-rules arguments (reverse (entity-extra self)) succeed fail))
+    (try-rules arguments (reverse (entity-extra self)) fail))
   (make-entity operator (reverse rules)))
 
 (define (pattern-dispatch . rules)
   (make-pattern-operator rules))
 
-(define (try-rules data rules succeed fail)
+(define (try-rules data rules fail)
   (let ((token (list 'fail)))
     (let per-rule ((rules rules))
       (if (null? rules)
@@ -45,7 +44,7 @@
           (let ((answer ((car rules) data token)))
             (if (eq? answer token)
                 (per-rule (cdr rules))
-                (succeed answer (lambda () (per-rule (cdr rules))))))))))
+                answer))))))
 
 (define (attach-rule! operator rule)
   (set-entity-extra! operator
