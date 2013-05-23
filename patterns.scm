@@ -263,41 +263,32 @@
                ,(last-list-submatcher (car (last-pair pattern)))))))
 
 (new-pattern-syntax! match:list? list-pattern->combinators)
-
+
 ;;;; Making toplevel matchers out of patterns
 
 (define (matcher pattern)
   (first-dictionary (match:->combinators pattern)))
 
-(define (first-dictionary matcher)
-  (lambda (datum)
-    (matcher
-     datum '()
-     (lambda (dict)
-       (dictionary->alist dict)))))
+(define ((first-dictionary matcher) datum)
+  (matcher datum '() dictionary->alist))
 
 (define (for-each-matcher pattern)
   (for-each-dictionary (match:->combinators pattern)))
 
-(define (for-each-dictionary matcher)
-  (lambda (datum f)
-    (matcher
-     datum '()
-     (lambda (dict)
-       (f (dictionary->alist dict))
-       #f))))
+(define ((for-each-dictionary matcher) datum f)
+  (matcher datum '()
+   (lambda (dict)
+     (f (dictionary->alist dict))
+     #f)))
 
 (define (all-results-matcher pattern)
   (all-dictionaries (match:->combinators pattern)))
 
-(define (all-dictionaries matcher)
-  (lambda (datum)
-    (let ((results '()))
-      ((for-each-dictionary matcher)
-       datum
-       (lambda (dict)
-	 (set! results (cons dict results))))
-      (reverse results))))
+(define ((all-dictionaries matcher) datum)
+  (let ((results '()))
+    ((for-each-dictionary matcher) datum
+     (lambda (dict) (set! results (cons dict results))))
+    (reverse results)))
 
 #|
  ((match:->combinators '(a ((? b) 2 3) 1 c))
