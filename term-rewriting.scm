@@ -19,6 +19,15 @@
 
 (declare (usual-integrations))
 
+;;;; Rule combinators
+
+;;; Here are various patterns of rule application captured as
+;;; combinators that take rules and produce rules (to wit, procedures
+;;; that accept one input and return the result of transforming it,
+;;; where returning the input itself signals match failure).
+
+;; Apply several rules in series, returning the first result that
+;; matches.
 (define ((rule-list rules) data)
   (let per-rule ((rules rules))
     (if (null? rules)
@@ -28,6 +37,7 @@
 	      (per-rule (cdr rules))
 	      answer)))))
 
+;; Apply one rule repeatedly until it doesn't match anymore.
 (define (iterated the-rule)
   (lambda (data)
     (let loop ((data data)
@@ -35,7 +45,7 @@
       (if (eqv? answer data)
 	  answer
 	  (loop answer (the-rule answer))))))
-
+
 (define (try-subexpressions the-rule expression)
   (if (list? expression)
       (let ((subexpressions-tried (map the-rule expression)))
