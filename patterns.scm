@@ -33,6 +33,49 @@
 ;;; takes the new dictionary as an argument.  If a match procedure
 ;;; fails it returns #f.
 
+;;; Primitive match procedures
+
+;; Match a pattern constant (by eqv?)
+(define (match:eqv pattern-constant)
+  (define (eqv-match data dictionary succeed)
+    (and (eqv? data pattern-constant)
+	 (succeed dictionary)))
+  eqv-match)
+
+;; Match a pattern variable, as long as the datum satisfies all the
+;; restriction predicates.
+(define (match:element variable restrictions)
+  (define (ok? datum)
+    (every (lambda (restriction)
+	     (restriction datum))
+	   restrictions))
+  (define (element-match data dictionary succeed)
+    (and (ok? data)
+	 (let ((vcell (dict:lookup variable dictionary)))
+	   (if vcell
+	       (and (equal? (dict:value vcell) data)
+		    (succeed dictionary))
+	       (succeed (dict:bind variable data dictionary))))))
+  element-match)
+
+;;; The dictionary
+
+(define (dict:bind variable data-object dictionary)
+  (cons (list variable data-object) dictionary))
+
+(define (dict:lookup variable dictionary)
+  (assq variable dictionary))
+
+;; I am choosing to have the dictionary hide the fact that segments
+;; have a special representation.
+(define (dict:value vcell)
+  (interpret-segment (cadr vcell)))
+
+(define (interpret-segments-in-dictionary dict)
+  (map (lambda (entry)
+	 (list (car entry) (interpret-segment (cadr entry))))
+       dict))
+
 ;;; Segment variables introduce some additional trouble.  Unlike other
 ;;; matchers, a segment variable is not tested against a fixed datum
 ;;; that it either matches or not, but against a list such that it may
@@ -98,45 +141,6 @@
       (segment-body thing)
       thing))
 
-;;; Primitive match procedures
-
-(define (match:eqv pattern-constant)
-  (define (eqv-match data dictionary succeed)
-    (and (eqv? data pattern-constant)
-	 (succeed dictionary)))
-  eqv-match)
-
-(define (match:element variable restrictions)
-  (define (ok? datum)
-    (every (lambda (restriction)
-	     (restriction datum))
-	   restrictions))
-  (define (element-match data dictionary succeed)
-    (and (ok? data)
-	 (let ((vcell (dict:lookup variable dictionary)))
-	   (if vcell
-	       (and (equal? (dict:value vcell) data)
-		    (succeed dictionary))
-	       (succeed (dict:bind variable data dictionary))))))
-  element-match)
-
-;;; The dictionary
-
-(define (dict:bind variable data-object dictionary)
-  (cons (list variable data-object) dictionary))
-
-(define (dict:lookup variable dictionary)
-  (assq variable dictionary))
-
-;;; I am choosing to have the dictionary hide the fact that segments
-;;; have a special representation.
-(define (dict:value vcell)
-  (interpret-segment (cadr vcell)))
-
-(define (interpret-segments-in-dictionary dict)
-  (map (lambda (entry)
-	 (list (car entry) (interpret-segment (cadr entry))))
-       dict))
 
 (define (match:segment variable)
   (define (segment-match data dictionary succeed)
