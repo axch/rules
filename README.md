@@ -8,7 +8,7 @@ The Rules software is an engine for
   call its third element `x`";
 - using them to define [rules](#rules) like `(rule (+ 0 (? x)) x)`,
   which means "If you get such a list, return its third element
-  (otherwise return your input) it"; and
+  (otherwise return your input)"; and
 - composing such rules into [pattern-dispatch](#pattern-dispatch) operators and
   [term rewriting](#term-rewriting) systems.
 
@@ -42,10 +42,10 @@ Table of Contents
     - [Portability](#portability)
 9. [Bugs](#bugs)
 10. [Unimplemented Features](#unimplemented-features)
-    - [More matchers](#more matchers)
-    - [More backtracking](#more-backtracking)
-    - [Specificity dispatch](#specificity-dispatch)
-    - [Performance](#performance)
+    - [More Matchers](#more matchers)
+    - [More Backtracking](#more-backtracking)
+    - [Specificity Dispatch](#specificity-dispatch)
+    - [Better Performance](#performance)
 11. [Author](#author)
 12. [History](#history)
 13. [License](#license)
@@ -739,7 +739,7 @@ viewed as a bug.
 Unimplemented Features
 ======================
 
-More matchers
+More Matchers
 -------------
 
 There are plenty of additional matcher types that may
@@ -748,7 +748,7 @@ operator of regular expressions, that accumulates the values from
 successive matches as lists of matched items.  That was the point of
 making this machine extensible -- go nuts.
 
-More backtracking
+More Backtracking
 -----------------
 
 In principle, the same mechanism used to control
@@ -763,7 +763,7 @@ pattern matchers can then be rewritten).  If you feel that you want
 this, I hope the present system can serve as a useful example for
 writing your own.
 
-Specificity dispatch
+Specificity Dispatch
 --------------------
 
 In principle, pattern-dispatch operators can
@@ -779,8 +779,8 @@ specificity dispatch impossible in general (without requiring some
 kind of additional user-supplied information about the relationships
 of any new matchers and any restriction predicates to each other).
 
-Performance
------------
+Better Performance
+------------------
 
 Though some attention has been given to making sure that at
 least common rules will have the asymptotic performace one would wish,
