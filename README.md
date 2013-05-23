@@ -15,7 +15,7 @@ The Rules software is an engine for
 In addition, Rules
 
 - is [extensible](#extension) to more kinds of patterns;
-- includes example term-rewriting simplifiers for logic and algebra;
+- includes example term-rewriting [simplifiers](#simplifiers) for logic and algebra;
   and
 - is itself meant as a pedagogical illustration of a way to write such
   engines.
@@ -33,6 +33,7 @@ Table of Contents
 3. [Rules](#rules)
 4. [Pattern Dispatch](#pattern-dispatch)
 5. [Term Rewriting](#term-rewriting)
+    - [Simplifiers](#simplifiers)
 6. [Extension](#extension)
     - [Implementing Custom Matcher Combinators](#implementing-custom-matcher-combinators)
     - [Custom Combinators in Patterns](#custom-combinators-in-patterns)
@@ -455,6 +456,22 @@ Iteration patterns are hard to describe in words.  If you are still
 confused about the rule application order of `on-subexpressions`,
 `iterated-on-subexpressions`, or `top-down`, they are defined quite
 concisely in `term-rewriting.scm`.
+
+Simplifiers
+-----------
+
+Mostly by way of example, Rules includes several term-rewriting
+systems for simplifying albegraic and logical expressions, in
+`simplifiers.scm`.  For instance,
+
+```scheme
+(simplify-algebra
+ '(+ (* 3 (+ x y 1))
+     -3
+     (* y (+ 1 2 -3) z)))
+ ===> (+ (* 3 x) (* 3 y))
+```
+
 
 Extension
 =========
