@@ -33,7 +33,7 @@
 ;;; takes the new dictionary as an argument.  If a match procedure
 ;;; fails it returns #f.
 
-;;; Primitive match procedures
+;;;; Simple match procedures
 
 ;; Match a pattern constant (by eqv?)
 (define (match:eqv pattern-constant)
@@ -76,6 +76,8 @@
 	 (cons (car entry) (interpret-segment (cadr entry))))
        dict))
 
+;;;; Lists and Segments
+
 ;;; Segment variables introduce some additional trouble.  Unlike other
 ;;; matchers, a segment variable is not tested against a fixed datum
 ;;; that it either matches or not, but against a list such that it may
@@ -89,59 +91,6 @@
 ;;; list matcher already knows how much data must be matched, and no
 ;;; search is needed.
 
-;;; How should the bound values of segment variables be represented?
-;;; The naive approach would just be to copy the segment of the list
-;;; that is bound --- that is, notionally, the value, after all.
-;;; However, this introduces an unnecessary linear slowdown in the
-;;; case when the current guess as to the length of the segment is
-;;; proven false without needing to examine the bound variable, for
-;;; instance if the next matcher doesn't match.  Therefore, segment
-;;; variables should be represented as pointers to the beginning and
-;;; end of the data in the segment, whence the actual list value can
-;;; be derived when needed.
-
-;;; Finally, the list matcher needs to behave differently when giving
-;;; data to a segment as opposed to a regular matcher: the segment
-;;; should be given the whole (remaining) list in contrast with just
-;;; the first data item for the regular matcher, and the segment may
-;;; (in fact, probably will) consume more than one element, so it
-;;; needs to pass the data remaining to its success continuation.  All
-;;; matchers could be made uniform by giving them all the interface of
-;;; the segment matcher, but I think it's less ugly to take advantage
-;;; of the fact that segment matchers can only occur as submatchers of
-;;; list matchers and make their interface special.
-
-;;; Segments
-
-(define-structure (segment (constructor make-segment (head tail)) safe-accessors)
-  head
-  tail
-  (body-cache #f))
-
-(define (segment-body segment)
-  (define (compute-segment-body)
-    (if (null? tail)
-	(segment-head segment)
-	(let loop ((head (segment-head segment))
-		   (tail (segment-tail segment)))
-	  (cond ((eq? head tail)
-		 '())
-		((null? head)
-		 (error "Tail pointer did not point into head's list" segment))
-		(else
-		 (cons (car head) (loop (cdr head) tail)))))))
-  (if (segment-body-cache segment)
-      (segment-body-cache segment)
-      (let ((answer (compute-segment-body)))
-	(set-segment-body-cache! segment answer)
-	answer)))
-
-(define (interpret-segment thing)
-  (if (segment? thing)
-      (segment-body thing)
-      thing))
-
-
 (define (match:segment variable)
   (define (segment-match data dictionary succeed)
     (and (list? data)
@@ -165,6 +114,25 @@
 			  (lp (cdr tail)))))))))
   (segment-matcher! segment-match)
   segment-match)
+
+;; Segment matchers have a different interface from others, so they
+;; need to be marked.
+(define (segment-matcher! thing)
+  (eq-put! thing 'segment-matcher #t)
+  thing)
+(define (segment-matcher? thing)
+  (eq-get thing 'segment-matcher))
+
+;;; The list matcher needs to behave differently when giving data to a
+;;; segment as opposed to a regular matcher: the segment should be
+;;; given the whole (remaining) list in contrast with just the first
+;;; data item for the regular matcher, and the segment may (in fact,
+;;; probably will) consume more than one element, so it needs to pass
+;;; the data remaining to its success continuation.  All matchers
+;;; could be made uniform by giving them all the interface of the
+;;; segment matcher, but I think it's less ugly to take advantage of
+;;; the fact that segment matchers can only occur as submatchers of
+;;; list matchers and make their interface special.
 
 (define (match:list . match-combinators)
   (define (list-match data dictionary succeed)
@@ -191,15 +159,47 @@
 	    (else #f))))
   list-match)
 
-;;; Sticky notes
+;;; How should the bound values of segment variables be represented?
+;;; The naive approach would just be to copy the segment of the list
+;;; that is bound -- that is, notionally, the value, after all.
+;;; However, this introduces an unnecessary linear slowdown in the
+;;; case when the current guess as to the length of the segment is
+;;; proven false without needing to examine the bound variable, for
+;;; instance if the next matcher doesn't match.  Therefore, segment
+;;; variables should be represented as pointers to the beginning and
+;;; end of the data in the segment, whence the actual list value can
+;;; be derived when needed.
 
-(define (segment-matcher! thing)
-  (eq-put! thing 'segment-matcher #t)
-  thing)
-(define (segment-matcher? thing)
-  (eq-get thing 'segment-matcher))
+(define-structure
+  (segment (constructor make-segment (head tail)) safe-accessors)
+  head
+  tail
+  (body-cache #f))
 
-;;; Syntax of matching is determined here.
+(define (segment-body segment)
+  (define (compute-segment-body)
+    (if (null? tail)
+	(segment-head segment)
+	(let loop ((head (segment-head segment))
+		   (tail (segment-tail segment)))
+	  (cond ((eq? head tail)
+		 '())
+		((null? head)
+		 (error "Tail pointer did not point into head's list" segment))
+		(else
+		 (cons (car head) (loop (cdr head) tail)))))))
+  (if (segment-body-cache segment)
+      (segment-body-cache segment)
+      (let ((answer (compute-segment-body)))
+	(set-segment-body-cache! segment answer)
+	answer)))
+
+(define (interpret-segment thing)
+  (if (segment? thing)
+      (segment-body thing)
+      thing))
+
+;;;; Syntax of patterns
 
 (define (match:element? pattern)
   (and (pair? pattern)
