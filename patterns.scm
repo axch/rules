@@ -71,7 +71,7 @@
 (define (dict:value vcell)
   (interpret-segment (cadr vcell)))
 
-(define (interpret-segments-in-dictionary dict)
+(define (dictionary->entry-list dict)
   (map (lambda (entry)
 	 (list (car entry) (interpret-segment (cadr entry))))
        dict))
@@ -264,7 +264,7 @@
     (matcher
      datum '()
      (lambda (dict)
-       (interpret-segments-in-dictionary dict)))))
+       (dictionary->entry-list dict)))))
 
 (define (for-each-matcher pattern)
   (for-each-dictionary (match:->combinators pattern)))
@@ -274,7 +274,7 @@
     (matcher
      datum '()
      (lambda (dict)
-       (f (interpret-segments-in-dictionary dict))
+       (f (dictionary->entry-list dict))
        #f))))
 
 (define (all-results-matcher pattern)
