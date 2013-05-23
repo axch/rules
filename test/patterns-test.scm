@@ -46,10 +46,10 @@
     (lambda (x) `(succeed ,x))))
 
   (equal?
-   '(((y (b b b b b b)) (x ()))
-     ((y (b b b b)) (x (b)))
-     ((y (b b)) (x (b b)))
-     ((y ()) (x (b b b))))
+   '(((y . (b b b b b b)) (x . ()))
+     ((y . (b b b b)) (x . (b)))
+     ((y . (b b)) (x . (b b)))
+     ((y . ()) (x . (b b b))))
    ((all-dictionaries
      (match:->combinators '(a (?? x) (?? y) (?? x) c)))
     '(a b b b b b b c)))
@@ -58,7 +58,7 @@
 	'(a b b b b b b a)))
 
   (equal?
-   '((b 1))
+   '((b . 1))
    ((matcher '(a ((? b) 2 3) (? b) c))
     '(a (1 2 3) 1 c))))
 
@@ -85,7 +85,7 @@
      (match:->combinators '(and (?? stuff))))
    (let ((items (iota 10))) ; constant time, except building the test list
      (assert-equal
-      `(((stuff ,items)))
+      `(((stuff . ,items)))
       ((all-dictionaries matcher)
        `(and ,@items)))))
 )

@@ -71,9 +71,9 @@
 (define (dict:value vcell)
   (interpret-segment (cadr vcell)))
 
-(define (dictionary->entry-list dict)
+(define (dictionary->alist dict)
   (map (lambda (entry)
-	 (list (car entry) (interpret-segment (cadr entry))))
+	 (cons (car entry) (interpret-segment (cadr entry))))
        dict))
 
 ;;; Segment variables introduce some additional trouble.  Unlike other
@@ -264,7 +264,7 @@
     (matcher
      datum '()
      (lambda (dict)
-       (dictionary->entry-list dict)))))
+       (dictionary->alist dict)))))
 
 (define (for-each-matcher pattern)
   (for-each-dictionary (match:->combinators pattern)))
@@ -274,7 +274,7 @@
     (matcher
      datum '()
      (lambda (dict)
-       (f (dictionary->entry-list dict))
+       (f (dictionary->alist dict))
        #f))))
 
 (define (all-results-matcher pattern)
