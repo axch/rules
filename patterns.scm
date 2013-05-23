@@ -218,9 +218,7 @@
 ;; A procedure is a Scheme escape -- it is interpreted as a matcher
 ;; combinator produced by means other than the compiler, and just
 ;; inserted in that place.
-(defhandler match:->combinators
-  (lambda (pattern) pattern)
-  procedure?)
+(new-pattern-syntax! (lambda (pattern) pattern) procedure?)
 
 ;; (? var) is a variable.
 (define (match:element? pattern)
@@ -230,7 +228,7 @@
 (define (match:variable-name pattern) (cadr pattern))
 (define (match:restrictions pattern) (cddr pattern))
 
-(defhandler match:->combinators
+(new-pattern-syntax!
   (lambda (pattern)
     (match:element
      (match:variable-name pattern)
@@ -242,7 +240,7 @@
   (and (pair? pattern)
        (eq? (car pattern) '??)))
 
-(defhandler match:->combinators
+(new-pattern-syntax!
   (lambda (pattern) (match:segment (match:variable-name pattern)))
   match:segment?)
 
@@ -266,7 +264,7 @@
 	     (append (map match:->combinators (except-last-pair pattern))
 		     (list (last-list-submatcher (car (last-pair pattern))))))))
 
-(defhandler match:->combinators list-pattern->combinators match:list?)
+(new-pattern-syntax! list-pattern->combinators match:list?)
 
 (define (matcher pattern)
   (first-dictionary (match:->combinators pattern)))
