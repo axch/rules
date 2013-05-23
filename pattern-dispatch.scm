@@ -42,6 +42,7 @@
       (if (null? rules)
           (fail)
           (let ((answer ((car rules) data token)))
+            ;; Distinguish failure from idempotent success
             (if (eq? answer token)
                 (per-rule (cdr rules))
                 answer))))))
