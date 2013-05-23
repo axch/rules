@@ -1,5 +1,27 @@
+Rules
+=====
+
+The Rules software is an engine for
+
+- defining [patterns](#patterns) like `(+ 0 (? x))`, which means "Match any list of
+  length 3 that begins with the symbol `+` and the number `0`, and
+  call its third element `x`";
+- using them to define [rules](#rules) like `(rule (+ 0 (? x)) x)`,
+  which means "If you get such a list, return its third element
+  (otherwise return your input) it"; and
+- composing such rules into [pattern-dispatch](#pattern-dispatch) operators and
+  [term rewriting](#term-rewriting) systems.
+
+In addition, Rules
+
+- is [extensible](#extension) to more kinds of patterns;
+- includes example term-rewriting simplifiers for logic and algebra;
+  and
+- is itself meant as a pedagogical illustration of a way to write such
+  engines.
+
 Table of Contents
-=================
+-----------------
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
@@ -8,6 +30,7 @@ Table of Contents
     - [Concepts](#concepts)
     - [Pattern Language](#pattern-language)
     - [Matching](#matching)
+3. [Rules](#rules)
 4. [Pattern Dispatch](#pattern-dispatch)
 5. [Term Rewriting](#term-rewriting)
 6. [Extension](#extension)
@@ -85,25 +108,6 @@ Writing them out as an explicit list of concise rules like this:
 makes it easier to see what the simplifier is actually doing, and
 therefore easier to get it right.  Much the same thing happens with
 local optimization passes in compilers.
-
-The Rules software is an engine for
-
-- defining patterns like `(+ 0 (? x))`, which means "Match any list of
-  length 3 that begins with the symbol `+` and the number `0`, and
-  call its third element `x`";
-- using them to define rules like `(rule (+ 0 (? x)) x)`, which means
-  "If you see such a list, return its third element, otherwise leave
-  it"; and
-- composing such rules into pattern-dispatch operators and term
-  rewriting systems.
-
-In addition, Rules
-
-- is extensible to more kinds of patterns;
-- includes example term-rewriting simplifiers for logic and algebra;
-  and
-- is itself meant as a pedagogical illustration of a way to write such
-  engines.
 
 
 Installation
