@@ -241,13 +241,13 @@
 
 (new-pattern-syntax! match:segment?
   (lambda (pattern) (match:segment (match:variable-name pattern))))
-
+
 ;; Every other list is a list matcher
 (define (match:list? pattern)
   (and (list? pattern)
        (or (null? pattern)
 	   (not (memq (car pattern) '(? ??))))))
-
+
 ;;; list-pattern->combinators is complicated because it detects the
 ;;; last submatcher in the pattern and, if it's a segment variable,
 ;;; arranges for it to avoid its search.
@@ -289,44 +289,17 @@
     ((for-each-dictionary matcher) datum
      (lambda (dict) (set! results (cons dict results))))
     (reverse results)))
-
 #|
- ((match:->combinators '(a ((? b) 2 3) 1 c))
-  '(a (1 2 3) 1 c)
-  '()
-   (lambda (x) `(succeed ,x)))
- ;Value: (succeed ((b 1)))
-
- ((match:->combinators '(a ((? b) 2 3) (? b) c))
-  '(a (1 2 3) 2 c)
-  '()
-   (lambda (x) `(succeed ,x)))
- ;Value: #f
-
- ((match:->combinators '(a ((? b) 2 3) (? b) c))
-  '(a (1 2 3) 1 c)
-  '()
-   (lambda (x) `(succeed ,x)))
- ;Value: (succeed ((b 1)))
-
-
- ((match:->combinators '(a (?? x) (?? y) (?? x) c))
-  '(a b b b b b b c)
-  '()
-  (lambda (x)
-    (pp `(succeed ,x))
-    #f))
- (succeed ((y (b b b b b b)) (x ())))
- (succeed ((y (b b b b)) (x (b))))
- (succeed ((y (b b)) (x (b b))))
- (succeed ((y ()) (x (b b b))))
- ;Value: #f
-
  ((matcher '(a ((? b) 2 3) (? b) c))
   '(a (1 2 3) 1 c))
- ;Value: ((b 1))
-|#
-
+ ;Value: ((b . 1))
+
+ (pp ((all-results-matcher '(a (?? x) (?? y) (?? x) c))
+      '(a b b b b b b c)))
+ (((y . (b b b b b b)) (x . ()))
+  ((y . (b b b b)) (x . (b)))
+  ((y . (b b)) (x . (b b)))
+  ((y . ()) (x . (b b b)))) |#
 ;;; Nice pattern inspection procedure that will be used by the
 ;;; pattern-directed invocation system.
 
