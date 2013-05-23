@@ -382,7 +382,9 @@ pattern and return their input on failure, so these combinators nest.
   its argument, repeatedly replacing the match with the result of the
   rule, until no rules apply.  Returns the final result.  (Does not
   mutate its input unless the bodies of the rules do.)  In particular,
-  if no rules match, returns its input unchanged (up to `eqv?`).
+  if no rules match, returns its input unchanged (up to `eqv?`).  Of
+  course, the rules in question should be arranged so as to ensure
+  that this process terminates in a reasonable amount of time.
 
   For purposes of determining substructure, the input is interpreted
   as an expression tree: to wit, an arbitrarily deep list of lists (as

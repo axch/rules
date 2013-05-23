@@ -19,12 +19,24 @@
 
 (declare (usual-integrations))
 
+;;;; Term rewriting
+
+;;; Make a term-rewriting system from a collection of rules.  This is
+;;; just a facade for a particular rule application strategy chosen
+;;; from the combinators below.
+
+(define (term-rewriting . rules)
+  (rule-simplifier rules))
+
+(define (rule-simplifier the-rules)
+  (iterated-on-subexpressions (rule-list the-rules)))
+
 ;;;; Rule combinators
 
-;;; Here are various patterns of rule application captured as
-;;; combinators that take rules and produce rules (to wit, procedures
-;;; that accept one input and return the result of transforming it,
-;;; where returning the input itself signals match failure).
+;;; Various patterns of rule application captured as combinators that
+;;; take rules and produce rules (to wit, procedures that accept one
+;;; input and return the result of transforming it, where returning
+;;; the input itself signals match failure).
 
 ;; Apply several rules in series, returning the first result that
 ;; matches.
@@ -36,16 +48,31 @@
 	  (if (eqv? data answer)
 	      (per-rule (cdr rules))
 	      answer)))))
+
+;; Apply several rules in series, threading the result of each into
+;; the next.
+(define ((in-order . the-rules) datum)
+  (let loop ((the-rules the-rules)
+             (datum datum))
+    (if (null? the-rules)
+        datum
+        (loop (cdr the-rules) ((car the-rules) datum)))))
 
 ;; Apply one rule repeatedly until it doesn't match anymore.
-(define (iterated the-rule)
-  (lambda (data)
-    (let loop ((data data)
-	       (answer (the-rule data)))
-      (if (eqv? answer data)
-	  answer
-	  (loop answer (the-rule answer))))))
-
+(define ((iterated the-rule) data)
+  (let loop ((data data)
+             (answer (the-rule data)))
+    (if (eqv? answer data)
+        answer
+        (loop answer (the-rule answer)))))
+
+;; Apply one rule to all subexpressions of the input, bottom-up.
+(define (on-subexpressions the-rule)
+  (define (on-expression expression)
+    (let ((subexpressions-done (try-subexpressions on-expression expression)))
+      (the-rule subexpressions-done)))
+  on-expression)
+
 (define (try-subexpressions the-rule expression)
   (if (list? expression)
       (let ((subexpressions-tried (map the-rule expression)))
@@ -54,12 +81,10 @@
             subexpressions-tried))
       expression))
 
-(define (on-subexpressions the-rule)
-  (define (on-expression expression)
-    (let ((subexpressions-done (try-subexpressions on-expression expression)))
-      (the-rule subexpressions-done)))
-  on-expression)
-
+;; Iterate one rule to convergence on all subexpressions of the input,
+;; bottom up.  Note that subexpressions of a result returned by one
+;; invocation of the rule may admit additional invocations, so we need
+;; to recur again after every successful transformation.
 (define (iterated-on-subexpressions the-rule)
   ;; Unfortunately, this is not just a composition of the prior two.
   (define (on-expression expression)
@@ -70,21 +95,8 @@
 	    (on-expression answer)))))
   on-expression)
 
-;;; RULE-SIMPLIFIER makes term-rewriting systems from collections of
-;;; rules.  Given a collection of rules, the term-rewriting system
-;;; will apply them repeatedly to all possible subexpressions of the
-;;; given expression, and to the expression itself, replacing any
-;;; successful match with the output of that rule, until no further
-;;; rules match.  Of course, the rules in question should be arranged
-;;; so as to ensure that this process terminates in a reasonable
-;;; amount of time.
-
-(define (rule-simplifier the-rules)
-  (iterated-on-subexpressions (rule-list the-rules)))
-
-(define (term-rewriting . rules)
-  (rule-simplifier rules))
-
+;; Iterate one rule to convergence on all subexpressions of the input,
+;; applying it on the way down as well as back up.
 (define (top-down the-rule)
   (define (on-expression expression)
     (let ((answer (the-rule expression)))
@@ -98,14 +110,6 @@
           (on-expression answer))))
   on-expression)
 
-(define (in-order . the-rules)
-  (lambda (datum)
-    (let loop ((the-rules the-rules)
-               (datum datum))
-      (if (null? the-rules)
-          datum
-          (loop (cdr the-rules)
-                ((car the-rules) datum))))))
 
 (define (list<? x y)
   (let ((nx (length x)) (ny (length y)))
