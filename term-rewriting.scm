@@ -38,8 +38,7 @@
 ;;; input and return the result of transforming it, where returning
 ;;; the input itself signals match failure).
 
-;; Apply several rules in series, returning the first result that
-;; matches.
+;; Apply several rules in series, returning the first success.
 (define ((rule-list rules) data)
   (let per-rule ((rules rules))
     (if (null? rules)
@@ -49,29 +48,26 @@
 	      (per-rule (cdr rules))
 	      answer)))))
 
-;; Apply several rules in series, threading the result of each into
-;; the next.
+;; Apply several rules in series, threading the results.
 (define ((in-order . the-rules) datum)
-  (let loop ((the-rules the-rules)
-             (datum datum))
+  (let loop ((datum datum) (the-rules the-rules))
     (if (null? the-rules)
         datum
-        (loop (cdr the-rules) ((car the-rules) datum)))))
+        (loop ((car the-rules) datum) (cdr the-rules)))))
 
 ;; Apply one rule repeatedly until it doesn't match anymore.
 (define ((iterated the-rule) data)
-  (let loop ((data data)
-             (answer (the-rule data)))
+  (let loop ((data data) (answer (the-rule data)))
     (if (eqv? answer data)
         answer
         (loop answer (the-rule answer)))))
 
 ;; Apply one rule to all subexpressions of the input, bottom-up.
 (define (on-subexpressions the-rule)
-  (define (on-expression expression)
-    (let ((subexpressions-done (try-subexpressions on-expression expression)))
+  (define (on-expr expression)
+    (let ((subexpressions-done (try-subexpressions on-expr expression)))
       (the-rule subexpressions-done)))
-  on-expression)
+  on-expr)
 
 (define (try-subexpressions the-rule expression)
   (if (list? expression)
@@ -86,26 +82,24 @@
 ;; invocation of the rule may admit additional invocations, so we need
 ;; to recur again after every successful transformation.
 (define (iterated-on-subexpressions the-rule)
-  ;; Unfortunately, this is not just a composition of the prior two.
-  (define (on-expression expression)
-    (let ((subexpressions-done (try-subexpressions on-expression expression)))
+  (define (on-expr expression)
+    (let ((subexpressions-done (try-subexpressions on-expr expression)))
       (let ((answer (the-rule subexpressions-done)))
 	(if (eqv? answer subexpressions-done)
 	    answer
-	    (on-expression answer)))))
-  on-expression)
+	    (on-expr answer)))))
+  on-expr)
 
 ;; Iterate one rule to convergence on all subexpressions of the input,
 ;; applying it on the way down as well as back up.
 (define (top-down the-rule)
-  (define (on-expression expression)
+  (define (on-expr expression)
     (let ((answer (the-rule expression)))
       (if (eqv? answer expression)
-          (let ((subexpressions-done
-                 (try-subexpressions on-expression expression)))
+          (let ((subexpressions-done (try-subexpressions on-expr expression)))
             (let ((answer (the-rule subexpressions-done)))
               (if (eqv? answer subexpressions-done)
                   answer
-                  (on-expression answer))))
-          (on-expression answer))))
-  on-expression)
+                  (on-expr answer))))
+          (on-expr answer))))
+  on-expr)
