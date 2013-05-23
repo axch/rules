@@ -95,8 +95,10 @@
       (success-value thing)
       thing))
 
-;;; The RULE macro is convenient syntax for writing rules.  A rule is
-;;; written as a quoted pattern and an expression.  If the pattern
+;;;; Rule syntax
+
+;;; The `rule' macro is convenient syntax for writing rules.  A rule
+;;; is written as a quoted pattern and an expression.  If the pattern
 ;;; matches, the expression will be evaluated in an environment that
 ;;; includes the bindings of the pattern variables.  If the expression
 ;;; returns #f, that will cause the pattern matcher to backtrack.
@@ -111,12 +113,10 @@
 			   (match:pattern-names pattern)))))))
 
 (define (compile-handler form env names)
-  ;; See magic below
   (make-lambda names env
     (lambda (env*) (close-syntax form env*))))
 
-;;; Magic!
-
+;; Magic!
 (define (make-lambda bvl use-env generate-body)
   (capture-syntactic-environment
    (lambda (transform-env)
@@ -143,7 +143,10 @@
 
 ;;; This procedure was dredged from the dark recesses of Edwin.  Many
 ;;; computer scientists would claim that it should never have been
-;;; allowed to see the light of day.
+;;; allowed to see the light of day.  The purpose is to be able to
+;;; interpret the formal parameter names of the closure that defines a
+;;; handler as variables to look up in a dictionary produced by a
+;;; matcher.
 
 (define (procedure-argl proc #!optional default-argl)
   "Returns the arg list of PROC.
