@@ -185,7 +185,7 @@
 	  (cond ((eq? head tail)
 		 '())
 		((null? head)
-		 (error "Tail pointer did not point into head's list" segment))
+		 (error "Tail did not point into head's list" segment))
 		(else
 		 (cons (car head) (loop (cdr head) tail)))))))
   (if (segment-body-cache segment)
@@ -201,22 +201,12 @@
 
 ;;;; Syntax of patterns
 
-(define (match:element? pattern)
-  (and (pair? pattern)
-       (eq? (car pattern) '?)))
+;;; The syntax of patterns is given by a compiler that turns a pattern
+;;; expression into a matcher combinator (which will often be a list
+;;; matcher closed over other matchers).  The compiler is a generic
+;;; operator, allowing the syntax to be extended.
 
-(define (match:segment? pattern)
-  (and (pair? pattern)
-       (eq? (car pattern) '??)))
-
-(define (match:variable-name pattern) (cadr pattern))
-(define (match:restrictions pattern) (cddr pattern))
-
-(define (match:list? pattern)
-  (and (list? pattern)
-       (or (null? pattern)
-	   (not (memq (car pattern) '(? ??))))))
-
+;; The default is to match the object itself.
 (define match:->combinators
   (make-generic-operator 1 'match:->combinators match:eqv))
 
@@ -225,9 +215,20 @@
     interpreter
     predicate))
 
+;; A procedure is a Scheme escape -- it is interpreted as a matcher
+;; combinator produced by means other than the compiler, and just
+;; inserted in that place.
 (defhandler match:->combinators
   (lambda (pattern) pattern)
   procedure?)
+
+;; (? var) is a variable.
+(define (match:element? pattern)
+  (and (pair? pattern)
+       (eq? (car pattern) '?)))
+
+(define (match:variable-name pattern) (cadr pattern))
+(define (match:restrictions pattern) (cddr pattern))
 
 (defhandler match:->combinators
   (lambda (pattern)
@@ -236,9 +237,20 @@
      (match:restrictions pattern)))
   match:element?)
 
+;; (?? var) is a segment variable
+(define (match:segment? pattern)
+  (and (pair? pattern)
+       (eq? (car pattern) '??)))
+
 (defhandler match:->combinators
   (lambda (pattern) (match:segment (match:variable-name pattern)))
   match:segment?)
+
+;; Every other list is a list matcher
+(define (match:list? pattern)
+  (and (list? pattern)
+       (or (null? pattern)
+	   (not (memq (car pattern) '(? ??))))))
 
 ;;; list-pattern->combinators is complicated because it detects the
 ;;; last submatcher in the pattern and, if it's a segment variable,
