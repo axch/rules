@@ -1,3 +1,32 @@
+Table of Contents
+=================
+
+1 [Introduction](#introduction)
+2 [Installation](#installation)
+3 [Patterns](#patterns)
+    - [Examples](#examples)
+    - [Concepts](#concepts)
+    - [Pattern Language](#pattern-language)
+    - [Matching](#matching)
+4 [Pattern Dispatch](#pattern-dispatch)
+5 [Term Rewriting](#term-rewriting)
+6 [Extension](#extension)
+    - [Implementing Custom Matcher Combinators](#implementing-custom-matcher-combinators)
+    - [Custom Combinators in Patterns](#custom-combinators-in-patterns)
+    - [A Note on Segment Matching](#a-note-on-segment-matching)
+7 [Other Pattern Matching Systems](#other-pattern-matching-systems)
+8 [Developer Documentation](#developer-documentation)
+    - [Portability](#portability)
+9 [Bugs](#bugs)
+10 [Unimplemented Features](#unimplemented-features)
+    - [More matchers](#more matchers)
+    - [More backtracking](#more-backtracking)
+    - [Specificity dispatch](#specificity-dispatch)
+    - [Performance](#performance)
+11 [Author](#author)
+12 [History](#history)
+13 [License](#license)
+
 Introduction
 ============
 
