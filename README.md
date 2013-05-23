@@ -709,8 +709,6 @@ therein.
     for tagging certain procedures as to the interface they expect.
   - `support/ghelper.scm`: A predicate dispatch system, used to
     implement the pattern compiler.
-  - `support/utils.scm`: A little magic to make the macrology work
-    out.
   - `load.scm`: Orchestrate the loading sequence.  Nothing interesting
     to see here.
   - `Makefile`: Run the test suite.  Note that there is no "build" as
