@@ -24,6 +24,9 @@ FILES = patterns.scm rules.scm pattern-dispatch.scm term-rewriting.scm simplifie
 workbook.ps: $(FILES)
 	enscript -M letter -fCourier-Bold12 -o workbook.ps --file-align=2 --color --highlight $(FILES)
 
+workbook.pdf: workbook.ps
+	ps2pdf workbook.ps
+
 clean:
 	rm *.bin *.bci *.com *.ext
 
