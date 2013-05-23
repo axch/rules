@@ -206,7 +206,7 @@
 ;;; matcher closed over other matchers).  The compiler is a generic
 ;;; operator, allowing the syntax to be extended.
 
-;; The default is to match the object itself.
+;; The default pattern matches itself (by eqv?).
 (define match:->combinators
   (make-generic-operator 1 'match:->combinators match:eqv))
 
@@ -218,7 +218,7 @@
 ;; A procedure is a Scheme escape -- it is interpreted as a matcher
 ;; combinator produced by means other than the compiler, and just
 ;; inserted in that place.
-(new-pattern-syntax! (lambda (pattern) pattern) procedure?)
+(new-pattern-syntax! procedure? (lambda (pattern) pattern))
 
 ;; (? var) is a variable.
 (define (match:element? pattern)
@@ -228,21 +228,19 @@
 (define (match:variable-name pattern) (cadr pattern))
 (define (match:restrictions pattern) (cddr pattern))
 
-(new-pattern-syntax!
+(new-pattern-syntax! match:element?
   (lambda (pattern)
     (match:element
      (match:variable-name pattern)
-     (match:restrictions pattern)))
-  match:element?)
+     (match:restrictions pattern))))
 
 ;; (?? var) is a segment variable
 (define (match:segment? pattern)
   (and (pair? pattern)
        (eq? (car pattern) '??)))
 
-(new-pattern-syntax!
-  (lambda (pattern) (match:segment (match:variable-name pattern)))
-  match:segment?)
+(new-pattern-syntax! match:segment?
+  (lambda (pattern) (match:segment (match:variable-name pattern))))
 
 ;; Every other list is a list matcher
 (define (match:list? pattern)
@@ -264,7 +262,7 @@
 	     (append (map match:->combinators (except-last-pair pattern))
 		     (list (last-list-submatcher (car (last-pair pattern))))))))
 
-(new-pattern-syntax! list-pattern->combinators match:list?)
+(new-pattern-syntax! match:list? list-pattern->combinators)
 
 (define (matcher pattern)
   (first-dictionary (match:->combinators pattern)))
