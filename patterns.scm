@@ -252,15 +252,15 @@
 ;;; last submatcher in the pattern and, if it's a segment variable,
 ;;; arranges for it to avoid its search.
 (define (list-pattern->combinators pattern)
-  (define (last-list-submatcher subpattern)
-    (if (match:segment? subpattern)
-	(segment-matcher! (match:element (match:variable-name subpattern) '()))
-	(match:->combinators subpattern)))
+  (define (last-list-submatcher subpat)
+    (if (match:segment? subpat)
+	(segment-matcher! (match:element (match:variable-name subpat) '()))
+	(match:->combinators subpat)))
   (if (null? pattern)
       (match:eqv '())
       (apply match:list
-	     (append (map match:->combinators (except-last-pair pattern))
-		     (list (last-list-submatcher (car (last-pair pattern))))))))
+	     `(,@(map match:->combinators (except-last-pair pattern))
+               ,(last-list-submatcher (car (last-pair pattern)))))))
 
 (new-pattern-syntax! match:list? list-pattern->combinators)
 
