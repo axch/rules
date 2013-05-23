@@ -21,13 +21,10 @@
 
 ;;;; Term rewriting
 
-;;; Make a term-rewriting system from a collection of rules.  This is
-;;; just a facade for a particular rule application strategy chosen
-;;; from the combinators below.
+;;; Make a term-rewriting system from a list of rules.  This is a
+;;; facade for a rule application strategy from the combinators below.
 
-(define (term-rewriting . rules)
-  (rule-simplifier rules))
-
+(define (term-rewriting . rules) (rule-simplifier rules))
 (define (rule-simplifier the-rules)
   (iterated-on-subexpressions (rule-list the-rules)))
 
@@ -47,14 +44,13 @@
 	  (if (eqv? data answer)
 	      (per-rule (cdr rules))
 	      answer)))))
-
+
 ;; Apply several rules in series, threading the results.
 (define ((in-order . the-rules) datum)
   (let loop ((datum datum) (the-rules the-rules))
     (if (null? the-rules)
         datum
-        (loop ((car the-rules) datum) (cdr the-rules)))))
-
+        (loop ((car the-rules) datum) (cdr the-rules)))))
 ;; Apply one rule repeatedly until it doesn't match anymore.
 (define ((iterated the-rule) data)
   (let loop ((data data) (answer (the-rule data)))
