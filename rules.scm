@@ -51,10 +51,12 @@
                ;; Not fail-token because it might be a success object
                (make-success fail-token)))))))
 
-;;; F is expected to be a procedure that binds the variables that
-;;; appear in the match and uses them somehow.  This converts it into
-;;; a success procedure that accepts the match dictionary.  Does not
-;;; deal with optional and rest arguments to f.
+;;; Handler interface normalization
+
+;;; The function f is expected to be a procedure that binds the
+;;; variables that appear in the match and uses them somehow.  This
+;;; converts it into a success procedure that accepts the match
+;;; dictionary.  Does not deal with optional and rest arguments to f.
 
 (define (accept-dictionary f #!optional default-argl)
   (let ((argl (procedure-argl f default-argl)))
@@ -68,9 +70,20 @@
        (let ((argument-list (map matched-value argl)))
          (apply f argument-list))))))
 
-;;; The handler can force success with an arbitrary object (including
-;;; #f) by returning the result of calling `succeed' on the value to
-;;; return.
+(define (accepts-variables? thing)
+  (not (accepts-dictionary? thing)))
+
+(define (accepts-dictionary? thing)
+  (eq-get thing 'accepts-dictionary))
+
+(define (accepts-dictionary! thing)
+  (eq-put! thing 'accepts-dictionary #t)
+  thing)
+
+;;; To allow the handler to cause its rule to succeed with #f, we
+;;; provide a custom data structure in which that #f can be wrapped so
+;;; it looks like a true value to the matcher combinators.  It is then
+;;; unwrapped by `interpret-success' in the rule procedure.
 
 (define-structure success
   value)
@@ -81,16 +94,6 @@
   (if (success? thing)
       (success-value thing)
       thing))
-
-(define (accepts-variables? thing)
-  (not (accepts-dictionary? thing)))
-
-(define (accepts-dictionary? thing)
-  (eq-get thing 'accepts-dictionary))
-
-(define (accepts-dictionary! thing)
-  (eq-put! thing 'accepts-dictionary #t)
-  thing)
 
 ;;; The RULE macro is convenient syntax for writing rules.  A rule is
 ;;; written as a quoted pattern and an expression.  If the pattern
