@@ -17,8 +17,8 @@ In addition, Rules
 - is [extensible](#extension) to more kinds of patterns;
 - includes example term-rewriting [simplifiers](#simplifiers) for logic and algebra;
   and
-- is itself meant as a pedagogical illustration of a way to write such
-  engines.
+- is itself meant as a [pedagogical illustration](http://web.mit.edu/~axch/www/rules/workbook.pdf)
+  of a way to write such engines.
 
 Table of Contents
 -----------------
