@@ -7,12 +7,12 @@
 ;;; under the terms of the GNU Affero General Public License as
 ;;; published by the Free Software Foundation; either version 3 of the
 ;;; License, or (at your option) any later version.
-;;; 
+;;;
 ;;; This code is distributed in the hope that it will be useful,
 ;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;; GNU General Public License for more details.
-;;; 
+;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Rules; if not, see
 ;;; <http://www.gnu.org/licenses/>.
@@ -146,6 +146,8 @@
      (term-rewriting distributive-law)
      simplify-quotient))))
 
+;;; Approaches toward two different normal forms for quotients
+
 (define ->quotient-of-sums
   (term-rewriting
    ;; Same denominator
@@ -182,6 +184,8 @@
                        `(/ ,n ,d)))
                     as)))))
 
+;;; Some rules for exponentiation (toward different normal forms)
+
 (define simplify-expt
   (term-rewriting
    (rule `(expt (? a ,number?) (? b ,number?))
@@ -190,54 +194,41 @@
    (rule `(expt (? b) 1) b)
    (rule `(expt (? b) -1) `(/ 1 b))     ; Do we want this?
    (rule `(expt 0 (? e)) 0)             ; Needs to be positive
-   (rule `(expt 1 (? e)) 1)
-   ))
+   (rule `(expt 1 (? e)) 1)))
 
 (define expand-expt
   (term-rewriting
    (rule `(expt (? x) (? n ,exact-integer? ,positive?))
          `(* ,@(make-list n x)))
    (rule `(expt (? x) (? n ,exact-integer? ,negative?))
-         `(/ 1 (* ,@(make-list n x))))
-   ))
+         `(/ 1 (* ,@(make-list n x))))))
 
 (define contract-expt
   (term-rewriting
    (rule `(* (?? f1) (? x) (? x) (?? f2))
          `(* ,@f1 (expt x 2) ,@f2))
-    
    (rule `(expt (expt (? x) (? n)) (? m))
          `(expt x (* ,n ,m)))
-
    (rule `(* (?? f1) (? x) (expt (? x) (? n)) (?? f2))
          `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
-    
    (rule `(* (?? f1) (expt (? x) (? n)) (? x) (?? f2))
          `(* ,@f1 (expt x (+ ,n 1)) ,@f2))
-
    (rule `(* (?? f1) (expt (? x) (? n)) (expt (? x) (? m)) (?? f2))
-         `(* ,@f1 (expt x (+ ,n ,m)) ,@f2))
-   ))
+         `(* ,@f1 (expt x (+ ,n ,m)) ,@f2))))
 
 ;;;; Logical simplification
-
 
 (define simplify-negations
   (term-rewriting
    (rule `(not (not (? x))) (succeed x))
    (rule `(not #t) (succeed #f))
    (rule `(not #f) (succeed #t))
-    
    (rule `(not (or (?? terms)))
-         `(and ,@(map (lambda (term)
-                        `(not ,term))
+         `(and ,@(map (lambda (term) `(not ,term))
                       terms)))
-
    (rule `(not (and (?? terms)))
-         `(or ,@(map (lambda (term)
-                       `(not ,term))
-                     terms)))
-   ))
+         `(or ,@(map (lambda (term) `(not ,term))
+                     terms)))))
 
 (define simplify-ors
   (term-rewriting
@@ -248,14 +239,11 @@
    (associativity 'or)
    (commutativity 'or)
    (idempotence 'or)
-
-   (rule `(or (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+   (rule `(or (?? ts1) (? a) (?? ts2) (not (? a)) (?? ts3))
          (succeed #t))
+   (rule `(or (?? ts1) (not (? a)) (?? ts2) (? a) (?? ts3))
+         (succeed #t))))
 
-   (rule `(or (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
-         (succeed #t))
-   ))
-
 (define simplify-ands
   (term-rewriting
    (nullary-replacement 'and #t)
@@ -265,20 +253,17 @@
    (associativity 'and)
    (commutativity 'and)
    (idempotence 'and)
-
-   (rule `(and (?? stuff) (? a) (?? more-stuff) (not (? a)) (?? even-more-stuff))
+   (rule `(and (?? ts1) (? a) (?? ts2) (not (? a)) (?? ts3))
          (succeed #f))
-
-   (rule `(and (?? stuff) (not (? a)) (?? more-stuff) (? a) (?? even-more-stuff))
-         (succeed #f))
-   ))
+   (rule `(and (?? ts1) (not (? a)) (?? ts2) (? a) (?? ts3))
+         (succeed #f))))
 
 (define push-or-through-and
   (rule `(or (?? or-terms-1) (and (?? and-terms)) (?? or-terms-2))
         `(and ,@(map (lambda (and-term)
                        `(or ,@or-terms-1 ,and-term ,@or-terms-2))
                      and-terms))))
-
+
 ;;; TODO Implement subsumption, and then implement resolution propertly.
 
 ;;; These resolution rules are wrong, because they do not deduce all
