@@ -98,8 +98,14 @@
    (rule `(* (? x ,number?) (? y ,number?) (?? z))
          `(* ,(* x y) ,@z))
    (associativity '*)
-   ;; TODO be able to turn commutativity off?
+   ;; TODO be able to turn commutativity off nicely?
    (commutativity '*)))
+
+(define remove-minus
+  (term-rewriting
+   (rule `(- (? x) (? y) (?? z))
+         `(+ ,x (* -1 (+ ,y ,@z))))
+   (rule `(- (? x)) `(* -1 ,x))))
 
 (define distributive-law
   (rule `(* (?? a) (+ (?? b)) (?? c))
@@ -107,13 +113,6 @@
                      (simplify-products
                       `(* ,@a ,x ,@c)))
                    b))))
-
-(define simplify-algebra
-  (iterated
-   (in-order
-    simplify-products
-    simplify-sums
-    (term-rewriting distributive-law))))
 
 (define simplify-quotient
   (term-rewriting
@@ -136,6 +135,16 @@
 (define (g:gcd x y) 1)
 (define (g:divide x y)
   (error "Unimplemented divide" x y))
+
+(define simplify-algebra
+  (in-order
+   remove-minus
+   (iterated
+    (in-order
+     simplify-products
+     simplify-sums
+     (term-rewriting distributive-law)
+     simplify-quotient))))
 
 (define ->quotient-of-sums
   (term-rewriting
@@ -184,13 +193,6 @@
    (rule `(expt 1 (? e)) 1)
    ))
 
-(define remove-minus
-  (term-rewriting
-   (rule `(- (? x) (? y) (?? z))
-         `(+ ,x (* -1 (+ ,y ,@z))))
-   (rule `(- (? x)) `(* -1 ,x))
-   ))
-
 (define expand-expt
   (term-rewriting
    (rule `(expt (? x) (? n ,exact-integer? ,positive?))
