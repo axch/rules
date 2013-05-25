@@ -333,11 +333,11 @@
      (,symbol?  . ,symbol<?)
      (,list?    . ,list<?))))
 
-(define (sorted? lst <)
-  ;; Specifically, I am testing that a stable sort of lst by < will
+(define (sorted? lst <?)
+  ;; Specifically, I am testing that a stable sort of lst by <? will
   ;; not change anything, that is, that there are no reversals where a
-  ;; later item is < an earlier one.
+  ;; later item is <? an earlier one.
   (cond ((not (pair? lst)) #t)
         ((not (pair? (cdr lst))) #t)
-        ((< (cadr lst) (car lst)) #f)
-        (else (sorted? (cdr lst) <))))
+        ((<? (cadr lst) (car lst)) #f)
+        (else (sorted? (cdr lst) <?))))
