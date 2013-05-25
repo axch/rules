@@ -176,7 +176,7 @@
 (define simplify-expt
   (term-rewriting
    (rule `(expt (? a ,number?) (? b ,number?))
-         (s:expt a b))
+         (expt a b))
 
    (rule `(expt (? b) 1) b)
    (rule `(expt (? b) -1) `(/ 1 b))     ; Do we want this?
