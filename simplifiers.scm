@@ -48,40 +48,27 @@
                           (cdr item)
                           (list item)))
                     `(,operator ,@a ,@b ,@c))))
-
-(define (sorted? lst <)
-  ;; Specifically, I am testing that a stable sort of lst by < will
-  ;; not change anything, that is, that there are no reversals where a
-  ;; later item is < an earlier one.
-  (cond ((not (pair? lst)) #t)
-        ((not (pair? (cdr lst))) #t)
-        ((< (cadr lst) (car lst)) #f)
-        (else (sorted? (cdr lst) <))))
-
+
 (define (commutativity operator)
   ;; Flipping one at a time is bubble sort
-  #;
-  (rule `(,operator (?? a) (? y) (? x) (?? b))
-        (and (expr<? x y)
-             `(,operator ,@a ,x ,y ,@b)))
+  ;; (rule `(,operator (?? a) (? y) (? x) (?? b))
+  ;;       (and (expr<? x y)
+  ;;            `(,operator ,@a ,x ,y ,@b)))
   ;; Finding a pair out of order and sorting is still quadratic,
   ;; because the matcher matches N times, and each requires
   ;; constructing the segments so they can be handed to the handler
   ;; (laziness would help).
-  #;
-  (rule `(,operator (?? a) (? y) (? x) (?? b))
-        (and (expr<? x y)
-             `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?))))
+  ;; (rule `(,operator (?? a) (? y) (? x) (?? b))
+  ;;       (and (expr<? x y)
+  ;;            `(,operator ,@(sort `(,@a ,x ,y ,@b) expr<?))))
   (rule `(,operator (?? terms))
         (and (not (sorted? terms expr<?))
              `(,operator ,@(sort terms expr<?)))))
 
 (define (idempotence operator)
   (define (remove-consecutive-duplicates lst)
-    (cond ((null? lst)
-           '())
-          ((null? (cdr lst))
-           lst)
+    (cond ((null? lst)        '())
+          ((null? (cdr lst))  lst)
           ((equal? (car lst) (cadr lst))
            (remove-consecutive-duplicates (cdr lst)))
           (else
@@ -90,8 +77,7 @@
         #; `(,operator ,@a ,x ,@b) ; One at a time is too slow
         `(,operator ,@(remove-consecutive-duplicates `(,@a ,x ,@b)))))
 
-;;;; Some algebraic simplification rules
-
+;;;; Some algebraic simplification rulesets
 
 (define simplify-sums
   (term-rewriting
@@ -101,8 +87,7 @@
    (rule `(+ (? x ,number?) (? y ,number?) (?? z))
          `(+ ,(+ x y) ,@z))
    (associativity '+)
-   (commutativity '+)
-   ))
+   (commutativity '+)))
 
 (define simplify-products
   (term-rewriting
@@ -113,8 +98,8 @@
    (rule `(* (? x ,number?) (? y ,number?) (?? z))
          `(* ,(* x y) ,@z))
    (associativity '*)
-   (commutativity '*) ;; TODO be able to turn this off?
-   ))
+   ;; TODO be able to turn commutativity off?
+   (commutativity '*)))
 
 (define distributive-law
   (rule `(* (?? a) (+ (?? b)) (?? c))
@@ -129,28 +114,26 @@
     simplify-products
     simplify-sums
     (term-rewriting distributive-law))))
-
+
 (define simplify-quotient
   (term-rewriting
    (rule `(/ (? n) 1) n)
    (rule `(/ 0 (? d)) 0)
-
    (rule `(/ 1 (/ (? n) (? d)))
          `(/ ,d ,n))
-
+   ;; Note how the applicability test (gcd != 1) and the computation
+   ;; share a subexpression.  This is why handlers need to be able to
+   ;; reject, instead of having separate applicability tests.
    (rule `(/ (? n) (? d))
          (let ((g (g:gcd n d)))
            (and (not (= g 1))
                 (let ((nn (g:divide n g))
                       (dd (g:divide d g)))
                   (simplify-quotient
-                   `(/ ,nn ,dd))))))
-   ))
+                   `(/ ,nn ,dd))))))))
 
-;;; For now:
-
+;;; TODO Implement multivariate polynomial gcd
 (define (g:gcd x y) 1)
-
 (define (g:divide x y)
   (error "Unimplemented divide" x y))
 
@@ -180,9 +163,7 @@
                 `(+ ,n
                     ,(simplify-products
                       (* ,d ,(simplify-sums `(+ ,@a1 ,@a2))))))
-              ,d)))
-
-   ))
+              ,d)))))
 
 (define quotient-of-sums->sum-of-quotients
   (term-rewriting
@@ -190,9 +171,7 @@
          `(+ ,@(map (lambda (n)
                       (simplify-quotient
                        `(/ ,n ,d)))
-                    as)))
-
-   ))
+                    as)))))
 
 (define simplify-expt
   (term-rewriting
@@ -366,3 +345,12 @@
      (,number?  . ,<)
      (,symbol?  . ,symbol<?)
      (,list?    . ,list<?))))
+
+(define (sorted? lst <)
+  ;; Specifically, I am testing that a stable sort of lst by < will
+  ;; not change anything, that is, that there are no reversals where a
+  ;; later item is < an earlier one.
+  (cond ((not (pair? lst)) #t)
+        ((not (pair? (cdr lst))) #t)
+        ((< (cadr lst) (car lst)) #f)
+        (else (sorted? (cdr lst) <))))
