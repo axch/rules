@@ -264,24 +264,6 @@
                        `(or ,@or-terms-1 ,and-term ,@or-terms-2))
                      and-terms))))
 
-;;; TODO Implement subsumption, and then implement resolution propertly.
-
-;;; These resolution rules are wrong, because they do not deduce all
-;;; consequences, and they remove the resolvees prematurely.
-;; (define resolution-1
-;;   (rule `(and (?? and-terms-1) (or (?? or-1-terms-1) (? a) (?? or-1-terms-2))
-;;           (?? and-terms-2) (or (?? or-2-terms-1) (not (? a)) (?? or-2-terms-2))
-;;           (?? and-terms-3))
-;;      `(and ,@and-terms-1 (or ,@or-1-terms-1 ,@or-1-terms-2 ,@or-2-terms-1 ,@or-2-terms-2)
-;;            ,@and-terms-2 ,@and-terms-3)))
-
-;; (define resolution-2
-;;   (rule `(and (?? and-terms-1) (or (?? or-1-terms-1) (not (? a)) (?? or-1-terms-2))
-;;           (?? and-terms-2) (or (?? or-2-terms-1) (? a) (?? or-2-terms-2))
-;;           (?? and-terms-3))
-;;      `(and ,@and-terms-1 (or ,@or-1-terms-1 ,@or-1-terms-2 ,@or-2-terms-1 ,@or-2-terms-2)
-;;            ,@and-terms-2 ,@and-terms-3)))
-
 (define ->conjunctive-normal-form
   (in-order
    simplify-negations
@@ -291,13 +273,31 @@
      simplify-ands
      (term-rewriting push-or-through-and)))))
 
+(define simplify-logic ->conjunctive-normal-form)
+
+;;; TODO Implement subsumption, and then implement resolution properly.
+
+;;; These resolution rules are wrong, because they do not deduce all
+;;; consequences, and they remove the resolvees prematurely.
+;; (define resolution-1
+;;   (rule `(and (?? and-ts-1) (or (?? or-1-ts-1) (? a) (?? or-1-ts-2))
+;;           (?? and-ts-2) (or (?? or-2-ts-1) (not (? a)) (?? or-2-ts-2))
+;;           (?? and-ts-3))
+;;      `(and ,@and-ts-1 (or ,@or-1-ts-1 ,@or-1-ts-2 ,@or-2-ts-1 ,@or-2-ts-2)
+;;            ,@and-ts-2 ,@and-ts-3)))
+
+;; (define resolution-2
+;;   (rule `(and (?? and-ts-1) (or (?? or-1-ts-1) (not (? a)) (?? or-1-ts-2))
+;;           (?? and-ts-2) (or (?? or-2-ts-1) (? a) (?? or-2-ts-2))
+;;           (?? and-ts-3))
+;;      `(and ,@and-ts-1 (or ,@or-1-ts-1 ,@or-1-ts-2 ,@or-2-ts-1 ,@or-2-ts-2)
+;;            ,@and-ts-2 ,@and-ts-3)))
+
 ;; (define do-resolution
 ;;   (iterated
 ;;    (in-order
 ;;     ->conjunctive-normal-form
 ;;     (term-rewriting resolution-1 resolution-2))))
-
-(define simplify-logic ->conjunctive-normal-form)
 
 ;;; Sort order for expressions (useful for canonical forms of
 ;;; commutative operations)
